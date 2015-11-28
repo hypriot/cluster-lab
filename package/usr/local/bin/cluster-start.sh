@@ -70,7 +70,7 @@ echo "setup dnsmasq dhcp server"
 # check if dnsmasq is installed
 dnsmasq=$(dpkg -l dnsmasq &> /dev/null)
 exit_dnsmasq=$?
-if [ "$exit_dnsmasq" != "1" ]; then
+if [ "$exit_dnsmasq" == "1" ]; then
 apt-get install -yqq --force-yes dnsmasq
 fi
 
