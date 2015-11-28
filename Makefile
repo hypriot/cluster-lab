@@ -105,9 +105,6 @@ build_debian_package:
 	sed -i'' "s/<SIZE>/$(BINARY_SIZE)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 	sed -i'' "s/<DESCRIPTION>/$(DESCRIPTION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 
-	# copy consul binary to destination
-	#cp $(BUILD_DIR)/binary/$(OUTPUT_NAME) $(BUILD_DIR)/package/$(PACKAGE_NAME)/usr/local/bin
-
 	# actually create package with dpkg-deb
 	cd $(BUILD_DIR)/package && dpkg-deb --build $(PACKAGE_NAME)
 
