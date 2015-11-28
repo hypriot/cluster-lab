@@ -1,0 +1,10 @@
+[Unit]
+Description=cluster-stop-on-shutdown
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+ExecStart=/usr/local/bin/cluster-stop.sh
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

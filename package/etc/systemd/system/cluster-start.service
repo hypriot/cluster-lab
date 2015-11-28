@@ -1,0 +1,12 @@
+[Unit]
+Description=cluster-start-on-boot
+Wants=docker.service
+After=docker.service
+
+[Service]
+ExecStart=/usr/local/bin/cluster-start.sh
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
+
