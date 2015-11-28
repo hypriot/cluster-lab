@@ -12,9 +12,9 @@ STRIP_VERSION :=$(shell cat VERSION | cut -c 2-)
 PACKAGE_RELEASE_VERSION = $(DRONE_BUILD_NUMBER)
 PACKAGE_RELEASE_VERSION ?= 1
 
-PACKAGE_VERSION=$(STRIP_VERSION)-$(PACKAGE_RELEASE_VERSION)
+PACKAGE_VERSION=$(VERSION)-$(PACKAGE_RELEASE_VERSION)
 
-PACKAGE_NAME="$(OUTPUT_NAME)_$(PACKAGE_VERSION)"
+PACKAGE_NAME=$(OUTPUT_NAME)_$(PACKAGE_VERSION)
 
 DESCRIPTION :=$(shell cat DESCRIPTION)
 
@@ -27,6 +27,8 @@ BUILD_DIR := $(BUILD_RESULTS)/$(OUTPUT_NAME)/$(DATE)_$(COMMIT_HASH)
 #default: download_from_S3 download_from_http extract dockerbuild dockersave dockerpush 
 # example for creating a binary 
 #default: compile copy_binary_to_upload_folder build_debian_package upload_to_packagecloud
+
+default: prepare_deb build_debian_package upload_to_packagecloud
 
 download_from_S3:
 	aws s3 cp s3://$(AWS_BUCKET)/$(DOWNLOADPATH) ./binary.tar.gz
@@ -88,27 +90,30 @@ copy_deb_to upload_folder:
 	cp -r builds/* $(BUILD_DIR)/package/
 
 create_sha256_checksums:
-	echo create checksums
+	echo "create checksums"
 	find_files = $(notdir $(wildcard $(BUILD_DIR)/package/*))
 	echo $(foreach dir,$(find_files),$(shell cd $(BUILD_DIR)/package && shasum -a 256 $(dir) >> $(dir).sha256))
 
 build_debian_package:
-	echo "build debian package"
-	mkdir -p $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN $(BUILD_DIR)/package/$(PACKAGE_NAME)/usr/local/bin
+	@echo "build debian package"
+	#mkdir -p $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN $(BUILD_DIR)/package/$(PACKAGE_NAME)/usr/local/bin
 
 	# copy package control template and replace version info
-	echo -e "Package: <NAME>\nVersion: <VERSION>\nSection: admin\nPriority: optional\nArchitecture: armhf\nEssential: no\nInstalled-Size: <SIZE>\nMaintainer: blog.hypriot.com\nDescription: <DESCRIPTION>" > $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
-	sed -i'' "s/<VERSION>/$(PACKAGE_VERSION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME/DEBIAN/control
-	sed -i'' "s/<NAME>/$(OUTPUT_NAME)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME/DEBIAN/control
-	sed -i'' "s/<SIZE>/$(BINARY_SIZE)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME/DEBIAN/control
-	sed -i'' "s/<DESCRIPTION>/$(DESCRIPTION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME/DEBIAN/control
+	echo "Package: <NAME>\nVersion: <VERSION>\nSection: admin\nPriority: optional\nArchitecture: armhf\nEssential: no\nInstalled-Size: <SIZE>\nMaintainer: blog.hypriot.com\nDescription: <DESCRIPTION>\n" > $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
+	sed -i'' "s/<VERSION>/$(PACKAGE_VERSION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
+	sed -i'' "s/<NAME>/$(OUTPUT_NAME)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
+	sed -i'' "s/<SIZE>/$(BINARY_SIZE)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
+	sed -i'' "s/<DESCRIPTION>/$(DESCRIPTION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 
 	# copy consul binary to destination
-	cp $(BUILD_DIR)/binary/$(OUTPUT_NAME) $(BUILD_DIR)/package/$(PACKAGE_NAME)/usr/local/bin
+	#cp $(BUILD_DIR)/binary/$(OUTPUT_NAME) $(BUILD_DIR)/package/$(PACKAGE_NAME)/usr/local/bin
 
 	# actually create package with dpkg-deb
-	cd $(BUILD_DIR)/package && 	dpkg-deb --build $(PACKAGE_NAME)
+	cd $(BUILD_DIR)/package && dpkg-deb --build $(PACKAGE_NAME)
 
 	# remove temporary folder with source package artifacts as they should not be uploaded to AWS S3
 	rm -R $(BUILD_DIR)/package/$(PACKAGE_NAME)
 
+prepare_deb:
+	mkdir -p $(BUILD_DIR)/package/$(PACKAGE_NAME)
+	cp -r package/* $(BUILD_DIR)/package/$(PACKAGE_NAME)/

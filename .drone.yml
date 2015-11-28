@@ -1,18 +1,8 @@
-image: registry.hypriot.com/armbuildchain/dockerindocker
-docker:
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+image: registry.hypriot.com/armbuildchain/drone_builder_base
 git:
   path: github.com/hypriot/cluster-lab
 script:
-  - echo "+++++ start docker daemon +++++"
-  - wrapdocker &
-  - sleep 5
-  - docker login --username=$$REGISTRY_USER --password=$$REGISTRY_PASSWORD --email=$$REGISTRY_USER_EMAIL $$REGISTRY_URL
-  - echo "+++++ build docker image +++++"
   - make
-  - echo "+++++ stop docker daemon +++++"
-  - start-stop-daemon --stop --pidfile "/var/run/docker.pid"
   - echo -e "#####################\n***** COMPLETED *****\n#####################"
 publish:
   s3:
