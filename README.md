@@ -109,16 +109,21 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 
 ## Known Bugs
 - TBA
+- consul follower join the cluster leader with the docker0 bridge IP
 
 
 ## Roadmap
 
 ### Ideas of Features
-- Instead of installing additional packages in the cluster-start.bash, add these add. packages as *dependency* to deb package
-- Install deb package in ClusterLab image instead of copying cluster-lab files, and install dnsmasq direct into the image
+- Instead of installing additional packages in the cluster-start.sh, add these additional packages as *dependency* to deb package (e.g. dnsmasq)
+- Install deb package in ClusterLab image instead of copying cluster-lab files.
 - Add ahmetalpbalkan/wagl as service discovery
+- make consul follower listen and bind only to the vlan IP [Bug 1]
+- Make vlan id and IP range changeable
+- add leadercheck to consul (watches consul info )
+- combine the two systemd services (cluster-start and cluster-stop) into one with ExecStart and ExecStop)
 - test with other hardware, such as Raspberry Pi Zero
-- test with Raspbian and other OSes
+- test with Raspbian and other OSes (e.g. armbian)
 
 ### Ideas of Use Cases:
 - Run Dockerui-Image on first boot (like swarm)
