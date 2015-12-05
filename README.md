@@ -15,7 +15,9 @@ Technologies used include the Docker stack (Docker-Compose, Swarm), Consul, and 
 
 ![Image of Kubernetes and Raspberry Pi](technologies_logos.png)
 
-**You are very welcome to extend this lab, whether with a technical contribution or some conceptional ideas!**  <br /> This software basically consists of a large and a small bash script, that's it. We tried to make it as easys as possible to understand what's happening. We look forward to any suggestion!
+**You are very welcome to extend this lab, whether with a technical contribution or some conceptional ideas!**  <br /> This software basically consists of a large and a small bash script, that's it. We tried to make it as easys as possible to understand what's happening. 
+
+Get in touch with us and the community in our [Gitter chat](https://gitter.im/hypriot/talk), on our [Blog](http://blog.hypriot.com/armed_docker_swarm_cluster_for_testing), on [Twitter](https://twitter.com/HypriotTweets), send a PR, ... Just choose the way you prefer. We look forward to any suggestion!
 
 ## How to run
 
