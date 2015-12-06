@@ -112,7 +112,7 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 ## Known Bugs
 - TBA
 - consul follower join the cluster leader with the docker0 bridge IP
-
+- restart after changing avahi-daemon config is missing
 
 ## Roadmap
 
