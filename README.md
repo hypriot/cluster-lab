@@ -15,7 +15,7 @@ Technologies used include the Docker stack (Docker-Compose, Swarm), Consul, and 
 
 ![Image of Kubernetes and Raspberry Pi](technologies_logos.png)
 
-**You are very welcome to extend this lab, whether with a technical contribution or some conceptional ideas!**  <br /> This software basically consists of a large and a small bash script, that's it. We tried to make it as easys as possible to understand what's happening. 
+**You are very welcome to extend this lab, whether with a technical contribution or some conceptional ideas!**  <br /> This software basically consists of a large and a small bash script, that's it. We tried to make it as easy as possible to understand what's happening. 
 
 Get in touch with us and the community in our [Gitter chat](https://gitter.im/hypriot/talk), on our [Blog](http://blog.hypriot.com/armed_docker_swarm_cluster_for_testing), on [Twitter](https://twitter.com/HypriotTweets), send a PR, ... Just choose the way you prefer. We look forward to any suggestion!
 
@@ -27,7 +27,8 @@ Get in touch with us and the community in our [Gitter chat](https://gitter.im/hy
   - Power supply
   - MicroSD card
   - Network cable
-- A network switch that is somehow connected to the Internet. Additionally, the switch needs to be able to evaluate IEEE 802.1Q VLAN flags of network packets. NB! This features is often also provided by low cost switches.
+- A network switch that is somehow connected to the Internet. This network switch shall not filter IEEE 802.1Q VLAN flags out of the network packets. NB! This features is often also provided by low costs switches
+
 You can test this by building a cluster of two nodes. On the node you started secondly, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably cannot evaluate VLAN flags and is therefore not suitable for this cluster lab.
 
 
@@ -102,7 +103,7 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 ## Troubleshooting
   - Check if the service providing the cluster functionality is running. Execute
 
-    `sudo systemctl status cluster-start.service`
+    `sudo systemctl status cluster-start`
 
   - Start the cluster service manually by
 
@@ -122,10 +123,10 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 - Instead of installing additional packages in the cluster-start.sh, add these additional packages as *dependency* to deb package (e.g. dnsmasq)
 - Install deb package in ClusterLab image instead of copying cluster-lab files.
 - Add ahmetalpbalkan/wagl as service discovery
-- Make consul follower listen and bind only to the vlan IP [Bug 1]
-- Make vlan id and IP range changeable
-- Add leadercheck to consul (watches consul info )
-- Combine the two systemd services (cluster-start and cluster-stop) into one with ExecStart and ExecStop)
+- Make consul follower listen and bind only to the VLAN IP [Bug 1]
+- Make VLAN id and IP range changeable
+- Add leadercheck to consul (watches consul info)
+- Combine the two systemd services (cluster-start and cluster-stop) into one with ExecStart and ExecStop
 - Test with other hardware, such as Raspberry Pi Zero
 - Test with Raspbian and other OSes (e.g. armbian)
 
@@ -133,13 +134,13 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 - Run Dockerui-Image on first boot (like swarm)
 - Kubernetes
 - Crate.io
-- Run Registrator, Consul-Template, HAProxy, and hypriot/busybox-htttpd on first boot (like swarm)
+- Run Registrator, Consul-Template, HAProxy, and hypriot/busybox-httpd on first boot (like swarm)
 
 
 ## Some technical background about how it works
   - Most network communications in the cluster are primarily exchanged within a Virtual LAN (VLAN) with ID `200`, which is assigned on `eth0` on each device. <br />
    The network mask of the VLAN is `192.168.200.0/24`.
-  - The node that runs the cluster lab software first is the *cluster cleader*. The cluster leader's IP address is statically configured to `192.168.200.1`. The cluster leader bootstraps Consul as first instance within the cluster.
+  - The node that runs the cluster lab software first is the *cluster leader*. The cluster leader's IP address is statically configured to `192.168.200.1`. The cluster leader bootstraps Consul as first instance within the cluster.
    The cluster leader starts a DHCP server using DNSMasq and dynamically assigns IP addresses to all other nodes in the cluster, which are called *slaves*.
    Thereby, IP addresses from DHCP are only provided within the VLAN, at a range from `192.168.200.101` to `192.168.200.200`
   - After the slaves successfully received their IP addresses, they join the Consul cluster that has been created by the cluster leader. In addition, all slaves join
