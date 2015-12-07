@@ -64,6 +64,7 @@ You can test this by building a cluster of two nodes. On the node you started se
 
     `docker run -ti --rm hypriot/rpi-consul members -rpc-addr=192.168.200.1:8400`
 
+  Note: Consul listens on several different ports. Please see section *Ports used* in the [offical docs](https://www.consul.io/docs/agent/options.html) for detailed info why is that.
   - Check if `eth0` is member of the virtual network
     
     `ip -d addr show`
@@ -112,9 +113,8 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 
 
 ## Known Bugs
-- TBA
-- consul follower join the cluster leader with the docker0 bridge IP
-- restart after changing avahi-daemon config is missing
+- Consul follower join the cluster leader with the docker0 bridge IP
+- Restart after changing avahi-daemon config is missing
 
 ## Roadmap
 
@@ -122,12 +122,12 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 - Instead of installing additional packages in the cluster-start.sh, add these additional packages as *dependency* to deb package (e.g. dnsmasq)
 - Install deb package in ClusterLab image instead of copying cluster-lab files.
 - Add ahmetalpbalkan/wagl as service discovery
-- make consul follower listen and bind only to the vlan IP [Bug 1]
+- Make consul follower listen and bind only to the vlan IP [Bug 1]
 - Make vlan id and IP range changeable
-- add leadercheck to consul (watches consul info )
-- combine the two systemd services (cluster-start and cluster-stop) into one with ExecStart and ExecStop)
-- test with other hardware, such as Raspberry Pi Zero
-- test with Raspbian and other OSes (e.g. armbian)
+- Add leadercheck to consul (watches consul info )
+- Combine the two systemd services (cluster-start and cluster-stop) into one with ExecStart and ExecStop)
+- Test with other hardware, such as Raspberry Pi Zero
+- Test with Raspbian and other OSes (e.g. armbian)
 
 ### Ideas of Use Cases:
 - Run Dockerui-Image on first boot (like swarm)
@@ -148,6 +148,7 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 
 ## Related projects
   - http://blog.arungupta.me/docker-swarm-cluster-using-consul/
+  - https://github.com/luxas/kubernetes-on-arm
   - http://besn0847.blogspot.de/2015/11/building-internet-wide-container.html
   - http://matthewkwilliams.com/index.php/2015/04/03/swarming-raspberry-pi-docker-swarm-discovery-options/
   - http://blog.scottlowe.org/2015/03/06/running-own-docker-swarm-cluster/
