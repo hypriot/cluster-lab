@@ -54,7 +54,7 @@ You can test this by building a cluster of two nodes. On the node you started se
 
 
 ## Test it and play with it
-  - You can use **Docker Swarm** by only providing one additional parameter in your Docker commands. For instance, when starting a container, Docker Swarm will distribute it on the cluster nodes according to a specific algorithm. <br />
+  - You can use **Docker Swarm** by only providing one additional parameter in your Docker commands. For instance, when starting a container, Docker Swarm will distribute it on the cluster nodes according to a specific strategy (see details about strategies [here](https://docs.docker.com/swarm/scheduler/strategy/). We use the default strategy, which is `spread`). <br />
   Start with listing all containers in the cluster by logging in via SSH to the cluster leader and execute
 
     `docker -H tcp://192.168.200.1:2378 info`
