@@ -23,23 +23,23 @@ Get in touch with us and the community in our [Gitter chat](https://gitter.im/hy
 
 ### Hardware Requirements
 
-- At least two Raspberry PI B 2 and for each
+- At least two Raspberry Pi's 1 or 2 (all models with a network interface will work, i.e. **B** or **B+**), and for each
   - Power supply
-  - MicroSD cards
+  - MicroSD card
   - Network cable
-- A network switch that is somehow connected to the Internet. Additionally, the switch needs to be able to evaluate IEEE 802.1Q VLAN flags of network packets. NB! This features is often also provided by low costs switches.
+- A network switch that is somehow connected to the Internet. Additionally, the switch needs to be able to evaluate IEEE 802.1Q VLAN flags of network packets. NB! This features is often also provided by low cost switches.
 You can test this by building a cluster of two nodes. On the node you started secondly, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably cannot evaluate VLAN flags and is therefore not suitable for this cluster lab.
 
 
 ### Option 1: Flash SD card image and boot each nodes from it
-  - [Download SD card image here](http://127.0.0.1:1313/downloads/#hypriot-cluster-lab:2a4af035d9e12b64c084b5e7cfb2c420)
-  - Flash the image to SD cards ([this script makes flashing easy for you](https://github.com/hypriot/flash))
+  - [Download SD card image here](http://blog.hypriot.com/downloads/#hypriot-cluster-lab:2a4af035d9e12b64c084b5e7cfb2c420)
+  - Flash the image on one SD card for each Raspberry Pi ([this script makes flashing easy for you](https://github.com/hypriot/flash))
   - Plug the SD cards in each node and power **only one** node on. This node will be the Master of the cluster.
   - Get the IP address of this node and open your browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to create it.
   - Power on all other nodes. After about 2 minutes, you should see all of them being listed in the Consul web interface.
 
 ### Option 2: Install the Cluster Lab as Debian Package
-  - Boot one node on HypriotOS (Other OSes have just not been tested yet. Please ping us if you wanna help testing this!)
+  - Boot one node on the [latest HypriotOS](http://blog.hypriot.com/downloads/) (you need "Version 0.5 Will" or above. Other OSes have just not been tested yet. Please ping us if you wanna help testing this!)
   - Get the IP of this node and connect to it via SSH (See our [getting-started guide](http://blog.hypriot.com/getting-started-with-docker-on-your-arm-device/) with HypriotOS if you need help here!
 
    `ssh pi@<IP of the node>`
@@ -48,7 +48,7 @@ You can test this by building a cluster of two nodes. On the node you started se
 
    `sudo apt-get update && sudo apt-get install hypriot-cluster-lab && sudo systemctl start cluster-start`
 
-  - On any devices in the same LAN network, open a browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to  create it.
+  - On any device in the same LAN network, open a browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to  create it.
   - Install the cluster lab software on all other nodes with the command given above. About 2 minutes after each install, you should see the nodes being listed in the Consul web interface.
 
 
@@ -56,7 +56,9 @@ You can test this by building a cluster of two nodes. On the node you started se
   - You can use **Docker Swarm** by only providing one additional parameter in your Docker commands. For instance, when starting a container, Docker Swarm will distribute it on the cluster nodes according to a specific algorithm. <br />
   Start with listing all containers in the cluster by logging in via SSH to the cluster leader and execute
 
-    `docker -H tcp://192.168.200.1:2378 info` on any node of the cluster.    
+    `docker -H tcp://192.168.200.1:2378 info`
+    
+  on any node of the cluster.    
 
   - List all consul members:
 
