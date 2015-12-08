@@ -7,7 +7,7 @@ This is an out-of-the-box solution that creates a fully auto-configured cluster 
 
 This cluster opens up numerous possibilities:
   - Run distributed applications in a *real* cluster
-  - Play with Docker, Docker Swarm and its tool set
+  - Play with Docker, Swarm and its tool set
   - Learn about networking, load balancing, high availability
   - ... and much more!
 
@@ -19,6 +19,8 @@ Technologies used include the Docker stack (Docker-Compose, Swarm), Consul, and 
 
 Get in touch with us and the community in our [Gitter chat](https://gitter.im/hypriot/talk), on our [Blog](http://blog.hypriot.com/armed_docker_swarm_cluster_for_testing), on [Twitter](https://twitter.com/HypriotTweets), send a PR, ... Just choose the way you prefer. We look forward to any suggestion!
 
+If you wanna know more about why we created this project, please see our [corresponding blog post](http://blog.hypriot.com/post/introducing-hypriot-cluster-lab-docker-clustering-as-easy-as-it-gets/)!
+
 ## How to run
 
 ### Hardware Requirements
@@ -27,9 +29,9 @@ Get in touch with us and the community in our [Gitter chat](https://gitter.im/hy
   - Power supply
   - MicroSD card
   - Network cable
-- A network switch that is somehow connected to the Internet. This network switch shall not filter IEEE 802.1Q VLAN flags out of the network packets. NB! This features is often also provided by low costs switches
+- A network switch that is somehow connected to the Internet. This network switch must not filter IEEE 802.1Q VLAN flags out of network packets. NB! This features is often also provided by low costs switches
 
-You can test this by building a cluster of two nodes. On the node you started secondly, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably cannot evaluate VLAN flags and is therefore not suitable for this cluster lab.
+You can test this by building a cluster of two nodes. On the node you started second, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably filters VLAN flags and is therefore not suitable for this cluster lab.
 
 
 ### Option 1: Flash SD card image and boot each nodes from it
