@@ -111,6 +111,28 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
 
     `sudo systemctl start cluster-start`
 
+  - In case the node, which started second also cosiders itself to be the master, your network switch might not support VLAN, i.e. it filters out VLAN tags of network packages. To test if your switch supports VLAN, follow these steps:
+    - Take two Linux machines of any kind, regardless of its settings. You can also use the Cluster Lab SD card image as operating system. If you run your Desktop machine on Linux, you can consider this one as first machine. 
+    - Connect these machines to your switch.
+    - Log in to the first machine. Run
+    ```
+    sudo ip link add link eth0 name eth0.555 type vlan id 555
+    sudo ip link set dev eth0.555 up
+    sudo ip addr add 10.10.10.1/24 dev eth0.555 
+    ```
+    - Log in to the second machine. Run
+    ```
+    sudo ip link add link eth0 name eth0.555 type vlan id 555
+    sudo ip link set dev eth0.555 up
+    sudo ip addr add 10.10.10.2/24 dev eth0.555 
+    ping 10.10.10.1
+    ```
+    The `ping` should spit out some feedback from `10.10.10.1`. Otherwise, your switch probably does not support VLAN. Since usually this feature is provided even by cheap switches, try to find just any other switch you may have around.
+    
+    - Reset the machines to the state before you started this test. Execute on both of them
+    
+    `ip link delete eth0.555`
+
   - A reboot often helps :-)
   - Ping us on Twitter or request help in our [community chat](https://gitter.im/hypriot/talk).
 
