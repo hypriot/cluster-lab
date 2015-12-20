@@ -101,7 +101,7 @@ build_debian_package:
 	# copy package control template and replace version info
 	echo "Package: <NAME>\nVersion: <VERSION>\nSection: admin\nPriority: optional\nArchitecture: armhf\nEssential: no\nInstalled-Size: <SIZE>\nMaintainer: blog.hypriot.com\nDescription: <DESCRIPTION>\n" > $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 	sed -i'' "s/<VERSION>/$(PACKAGE_VERSION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
-	sed -i'' "s/<NAME>/$(OUTPUT_NAME)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
+	sed -i'' "s/<NAME>/hypriot-$(OUTPUT_NAME)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 	sed -i'' "s/<SIZE>/$(BINARY_SIZE)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 	sed -i'' "s/<DESCRIPTION>/$(DESCRIPTION)/g" $(BUILD_DIR)/package/$(PACKAGE_NAME)/DEBIAN/control
 
