@@ -1,9 +1,18 @@
-image: registry.hypriot.com/armbuildchain/drone_builder_base
-git:
-  path: github.com/hypriot/cluster-lab
-script:
-  - make
-  - echo -e "#####################\n***** COMPLETED *****\n#####################"
+build:
+  image: firecyberice/rpi-docker:1.10.0-dev
+  extra_hosts:
+    - docker
+  environment:
+    - DOCKER_HOST=tcp://localhost:2375
+  commands:
+    - apk update && apk add git curl bash make
+    - make
+
+compose:
+  docker:
+    privileged: true
+    image: firecyberice/rpi-docker:1.10.0-dev-dind
+
 publish:
   s3:
     acl: public-read
@@ -11,13 +20,18 @@ publish:
     bucket: $$AWS_BUCKET
     access_key: $$AWS_ACCESS_KEY_ID
     secret_key: $$AWS_SECRET_ACCESS_KEY
-    source: $$BUILD_RESULTS
-    target: $$S3_PREFIX
+    source: /drone/src/buildresult
+    target: arm-binaries/compose/
     recursive: true
+    when:
+      branch: master
+
 notify:
   slack:
     webhook_url: $$SLACK_WEBHOOK_URL
-    on_started: false
-    on_success: true
-    on_failure: true
-
+    channel: buildstatus
+    username: Drone
+    when:
+      started: false
+      success: true
+      failure: true
