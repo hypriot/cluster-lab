@@ -1,7 +1,7 @@
 build:
   image: resin/rpi-raspbian:jessie
   commands:
-    - apt-get update && apt-get install -y git curl bash make dpkg-deb
+    - apt-get update && apt-get install -y git curl bash make
     - make
 
 publish:
