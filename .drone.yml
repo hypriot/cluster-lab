@@ -5,7 +5,7 @@ build:
   environment:
     - DOCKER_HOST=tcp://localhost:2375
   commands:
-    - apk update && apk add git curl bash make
+    - apk update && apk add git curl bash make dpkg-deb
     - make
 
 compose:
