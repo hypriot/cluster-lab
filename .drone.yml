@@ -1,17 +1,8 @@
 build:
-  image: firecyberice/rpi-docker:1.10.0-dev
-  extra_hosts:
-    - docker
-  environment:
-    - DOCKER_HOST=tcp://localhost:2375
+  image: resin/rpi-raspbian:jessie
   commands:
-    - apk update && apk add git curl bash make dpkg-deb
+    - apt-get update && apt-get install -y git curl bash make dpkg-deb
     - make
-
-compose:
-  docker:
-    privileged: true
-    image: firecyberice/rpi-docker:1.10.0-dev-dind
 
 publish:
   s3:
