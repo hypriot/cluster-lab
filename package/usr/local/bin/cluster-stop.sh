@@ -30,7 +30,7 @@ if [ -f "/etc/avahi/services/cluster-master.service" ];then
 rm /etc/avahi/services/cluster-master.service
 sed -i -e 's/deny-interfaces=eth1,eth0,wlan0,docker0/#deny-interfaces=eth1/' /etc/avahi/avahi-daemon.conf
 sed -i -e 's/allow-interfaces=eth0.200/#allow-interfaces=eth0/' /etc/avahi/avahi-daemon.conf
-sed -i -e 's/use-ipv6=no/use-ipv6=yes' /etc/avahi/avahi-daemon.conf
+sed -i -e 's/use-ipv6=no/use-ipv6=yes/' /etc/avahi/avahi-daemon.conf
 fi
 }
 
