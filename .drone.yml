@@ -41,8 +41,6 @@ publish:
     source: /drone/src/buildresult
     target: arm-binaries/compose/
     recursive: true
-    when:
-      branch: master
 
 notify:
   slack:
