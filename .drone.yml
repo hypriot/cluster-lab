@@ -10,7 +10,7 @@ build:
     - export REPO=$(git rev-parse --short HEAD)
     - export BUILD_RESULTS=/drone/src/buildresult
     - export BUILD_DIR=${BUILD_RESULTS}/arm-binaries/${PACKAGE_NAME}/${TIMESTAMP}_${REPO}
-    - export DESCRIPTION=$(cat DESCRIPTION)
+    - export DESCRIPTION="$(cat DESCRIPTION)"
     - mkdir -p ${BUILD_DIR}/package/${PACKAGE_NAME}
     - cp -r package/* ${BUILD_DIR}/package/${PACKAGE_NAME}/
     - sed -i'' "s/<VERSION>/${PACKAGE_VERSION}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
