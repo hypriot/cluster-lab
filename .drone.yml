@@ -2,9 +2,7 @@ build:
   image: resin/rpi-raspbian:jessie
   commands:
     - apt-get update && apt-get install -y git curl bash make ca-certificates
-
 # repo name
-
     - export VERSION=$(cat VERSION)
     - export OUTPUT_NAME ?= $(shell basename `git rev-parse --show-toplevel`)
     - export PACKAGE_VERSION=${VERSION}-${DRONE_BUILD_NUMBER}
