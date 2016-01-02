@@ -3,7 +3,7 @@ build:
   commands:
     - apt-get update && apt-get install -y git curl bash make ca-certificates
     - export VERSION=$(cat VERSION)
-    - export OUTPUT_NAME ?= $(shell basename `git rev-parse --show-toplevel`)
+    - export OUTPUT_NAME=$(basename `git rev-parse --show-toplevel`)
     - export PACKAGE_VERSION=${VERSION}-${DRONE_BUILD_NUMBER}
     - export PACKAGE_NAME=docker-compose
     - export TIMESTAMP=$(date +"%Y-%m-%d_%H%M")
