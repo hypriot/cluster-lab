@@ -16,7 +16,7 @@ build:
     - export DESCRIPTION=$(cat DESCRIPTION)
     - mkdir -p ${BUILD_DIR}/package
     - cp -r package/* ${BUILD_DIR}/package/${PACKAGE_NAME}/
-    - export BINARY_SIZE=$(stat -c %s )
+    - export BINARY_SIZE=1000
 # copy package control template and replace version info
     - echo "Package: <NAME>\nVersion: <VERSION>\nSection: admin\nPriority: optional\nArchitecture: armhf\nEssential: no\nInstalled-Size: <SIZE>\nMaintainer: blog.hypriot.com\nDescription: <DESCRIPTION>\n" > ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - sed -i'' "s/<VERSION>/${PACKAGE_VERSION}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
