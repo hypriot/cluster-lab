@@ -5,7 +5,7 @@ build:
     - export VERSION=$(cat VERSION)
     - export OUTPUT_NAME=$(basename `git rev-parse --show-toplevel`)
     - export PACKAGE_VERSION=${VERSION}-${DRONE_BUILD_NUMBER}
-    - export PACKAGE_NAME=docker-compose
+    - export PACKAGE_NAME=hypriot-cluster-lab
     - export TIMESTAMP=$(date +"%Y-%m-%d_%H%M")
     - export REPO=$(git rev-parse --short HEAD)
     - export BUILD_RESULTS=/drone/src/buildresult
