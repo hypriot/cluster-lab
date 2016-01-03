@@ -150,7 +150,7 @@ EOM
 
 if [ "$MASTERorSLAVE" == "master" ]; then
 cat << EOM >> /usr/local/bin/cluster.yml
-  command: agent -server -rejoin -data-dir /data -ui-dir /web-ui -bind ${SELFIP} -client 0.0.0.0 -bootstrap-expect 1
+  command: agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${SELFIP} -client 0.0.0.0 -bootstrap-expect 1
 
 swarmmanage:
   image: hypriot/rpi-swarm
@@ -161,7 +161,7 @@ EOM
 
 elif [ "$MASTERorSLAVE" == "slave" ]; then
 cat << EOM >> /usr/local/bin/cluster.yml
-  command: agent -server -rejoin -data-dir /data -ui-dir /web-ui -bind ${SELFIP} -client 0.0.0.0 -join ${CLUSTERMASTERIP}:8301
+  command: agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${SELFIP} -client 0.0.0.0 -join ${CLUSTERMASTERIP}:8301
 EOM
 fi
 
