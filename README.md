@@ -133,6 +133,7 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
     
     `ip link delete eth0.555`
 
+  - In case you get an error `network sandbox join failed: error creating vxlan interface: operation not supported` or similar vxlan not supported errors, your linux kernel misses vxlan support. This problem can be fixed by compiling your own kernel with `CONFIG_VXLAN=m`. The provider of your linux distribution might provide more details on how to do this.
   - A reboot often helps :-)
   - Ping us on Twitter or request help in our [community chat](https://gitter.im/hypriot/talk).
 
