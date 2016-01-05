@@ -134,9 +134,25 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
     `ip link delete eth0.555`
 
   - In case you get an error `network sandbox join failed: error creating vxlan interface: operation not supported` or similar vxlan not supported errors, your linux kernel misses vxlan support. This problem can be fixed by compiling your own kernel with `CONFIG_VXLAN=m`. The provider of your linux distribution might provide more details on how to do this.
+  - If you would like to change the VLAN ID, execute the following commands on all nodes on the cluster
+    
+    - `sudo -s`
+    
+    - `systemctl start cluster-stop`
+    
+    - Replace `XXX` in the following command with the VLAN ID you would like to use and execute it:
+     
+      `cd /usr/local/bin && sed -i 's/eth0.200/eth0.XXX/g' cluster-stop.sh && sed -i 's/eth0.200/eth0.XXX/g' cluster-start.sh && sed -i 's/id\ 200/id\ XXX/g' cluster-start.sh && sed -i 's/tag\ 200/tag\ XXX/g' cluster-start.sh && sed -i 's/vlan\ 200/vlan\ XXX/g' cluster-start.sh`
+    
+    - To test it, execute `grep -r 200 cluster-*`. If you only get 5 lines of code as output, the substitution was successful.
+    
+    - `systemctl start cluster-start`
+    
+    - `exit` 
+    
+    - To test it, execute `ip a`. You should see a network interface **eth0.XXX@eth0** showing your new VLAN ID.
   - A reboot often helps :-)
   - Ping us on Twitter or request help in our [community chat](https://gitter.im/hypriot/talk).
-
 
 ## Known Bugs
 - Consul follower join the cluster leader with the docker0 bridge IP
