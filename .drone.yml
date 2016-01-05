@@ -33,7 +33,7 @@ publish:
     access_key: $$AWS_ACCESS_KEY_ID
     secret_key: $$AWS_SECRET_ACCESS_KEY
     source: /drone/src/buildresult
-    target: arm-binaries/compose/
+    target: arm-binaries/clusterlab/
     recursive: true
 
 notify:
