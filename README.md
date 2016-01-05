@@ -1,5 +1,3 @@
-[![Build Status](http://armbuilder2.hypriot.com/api/badge/github.com/hypriot/cluster-lab/status.svg?branch=master)](http://armbuilder2.hypriot.com/github.com/hypriot/cluster-lab)
-
 # Hypriot Cluster Lab
 
 The Hypriot Cluster Lab is a piece of software that can be installed on nodes within a network, which then will be automatically combined to a cluster of nodes.
@@ -136,7 +134,7 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
   - In case you get an error `network sandbox join failed: error creating vxlan interface: operation not supported` or similar vxlan not supported errors, your linux kernel misses vxlan support. This problem can be fixed by compiling your own kernel with `CONFIG_VXLAN=m`. The provider of your linux distribution might provide more details on how to do this.
   - If you would like to change the VLAN ID, execute the following commands on all nodes on the cluster
     
-    - `sudo -s`
+    - Make sure that you are logged in as **root**. Otherwise, execute`sudo -s`.
     
     - `systemctl start cluster-stop`
     
@@ -147,8 +145,6 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
     - To test it, execute `grep -r 200 cluster-*`. If you only get 5 lines of code as output, the substitution was successful.
     
     - `systemctl start cluster-start`
-    
-    - `exit` 
     
     - To test it, execute `ip a`. You should see a network interface **eth0.XXX@eth0** showing your new VLAN ID.
   - A reboot often helps :-)
