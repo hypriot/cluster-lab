@@ -1,0 +1,10 @@
+#
+# This docker-compose.yml starts a dockerui container with the website on port 9000 of the hardware node
+# It connects to the http socket of the swarm manager 
+# (VLAN IP of the master node port 2378) to get all infos about the cluster.
+#
+dockerui:
+  image: hypriot/rpi-dockerui
+  ports:
+    - 9000:9000
+  command: -e http://192.168.200.1:2378
