@@ -1,5 +1,10 @@
 # Hypriot Cluster Lab
 
+*This is a proof of concept and an alpha version*
+
+Feel free to make PRs and create issues.
+
+
 The Hypriot Cluster Lab is a piece of software that can be installed on nodes within a network, which then will be automatically combined to a cluster of nodes.
 This is an out-of-the-box solution that creates a fully auto-configured cluster within only a few minutes.
 
