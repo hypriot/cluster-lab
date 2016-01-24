@@ -38,7 +38,7 @@ You can test this by building a cluster of two nodes. On the node you started se
 
 
 ### Option 1: Flash SD card image and boot each nodes from it
-  - [Download SD card image here](https://github.com/hypriot/cluster-lab/releases/)
+  - [Download SD card image here](http://blog.hypriot.com/downloads/#hypriot-cluster-lab:2a4af035d9e12b64c084b5e7cfb2c420)
   - Flash the image on one SD card for each Raspberry Pi ([this script makes flashing easy for you](https://github.com/hypriot/flash))
   - Plug the SD cards in each node and power **only one** node on. This node will be the Master of the cluster.
   - Get the IP address of this node and open your browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to create it.
