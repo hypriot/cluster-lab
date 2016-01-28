@@ -26,15 +26,13 @@ If you wanna know more about why we created this project, please see our [corres
 
 ## How to run
 
-### Hardware Requirements
+### Requirements
 
 - At least two Raspberry Pi's 1 or 2 (all models with a network interface will work, i.e. **B** or **B+**), and for each
   - Power supply
   - MicroSD card
   - Network cable
-- A network switch that is somehow connected to the Internet. This network switch must not filter IEEE 802.1Q VLAN flags out of network packets. NB! This features is often also provided by low costs switches
-
-You can test this by building a cluster of two nodes. On the node you started second, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably filters VLAN flags and is therefore not suitable for this cluster lab.
+- **A network switch that is somehow connected to the Internet, such that all Raspberry Pi's have Internet access as well.** This network switch must not filter IEEE 802.1Q VLAN flags out of network packets. NB! This features is often also provided by low costs switches. You can test if your Router supports VLAN by building a cluster of two nodes. On the node you started second, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably filters VLAN flags and is therefore not suitable for this cluster lab.
 
 
 ### Option 1: Flash SD card image and boot each nodes from it
