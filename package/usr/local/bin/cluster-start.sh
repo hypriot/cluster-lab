@@ -1,5 +1,17 @@
 #!/bin/bash
 
+checkconnectivity(){
+# Do not proceed until ping to 8.8.8.8 is successful
+while ! ping -c 1 8.8.8.8 &> /dev/null
+do
+  echo Ping to IP address 8.8.8.8 was not successful. Retrying...
+  sleep 3
+done
+
+echo Ping to IP address 8.8.8.8 was successful.
+
+}
+
 prepare () {
 
 echo "update package lists"
@@ -30,7 +42,7 @@ else
 IP=${DEFAULTMASTERIP}
 fi
 
-echo "set ip address on vlan 200" 
+echo "set ip address on vlan 200"
 ip addr add ${IP}/24 dev eth0.200
 ip link set dev eth0.200 up
 }
@@ -76,10 +88,10 @@ fi
 
 
 # if file backup exists do not override!
-if [ ! -f "/etc/dnsmasq.conf_bak" ]; then 
+if [ ! -f "/etc/dnsmasq.conf_bak" ]; then
 cp /etc/dnsmasq.conf /etc/dnsmasq.conf_bak
 fi
-cat << EOM > /etc/dnsmasq.conf 
+cat << EOM > /etc/dnsmasq.conf
 
 # set domain name
 domain=hypriot.cluster
@@ -91,7 +103,7 @@ interface=eth0.200
 # 1:  subnet masq
 # 3:  default router
 # 6:  DNS server
-# 12: hostname  
+# 12: hostname
 # 15: DNS domain (unneeded with option 'domain')
 # 28: broadcast address
 # 42: time server
@@ -192,19 +204,20 @@ DEFAULTMASTERIP=192.168.200.1
 :<< EOM
 vlan tag
 netmask cidr
-dhcp 
+dhcp
 	broadcast
 	netmask
 	range
 		from
 		to
-		
+
 INTERFACE=eth0.${VLANID}
 EOM
 
 
 fixrouting
-echo -e "#---------\n# prepare\n#---------"
+echo -e "#---------\n# prepare cluster lab\n#---------"
+checkconnectivity
 prepare
 createvlan
 configavahi
@@ -283,5 +296,3 @@ ip addr show eth0.200
 
 echo "list routes"
 ip route show
-
-
