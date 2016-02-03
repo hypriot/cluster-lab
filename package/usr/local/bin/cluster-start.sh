@@ -1,5 +1,7 @@
 #!/bin/bash
 
+run_apt_update=1
+
 checkconnectivity(){
 # Do not proceed until ping to 8.8.8.8 is successful
 while ! ping -c 1 8.8.8.8 &> /dev/null
@@ -17,19 +19,30 @@ ntpdate -u pool.ntp.org
 
 prepare () {
 
-echo "update package lists"
-currenttime=$(date +"%s")
-updatetime=$(stat -c %Y /var/cache/apt/)
+packages=""
 
-delta=`expr $currenttime - $updatetime`
-timeout=`expr 60 \* 60`
-
-if [ $delta > $timeout ]; then
-apt-get update -qq
+dpkg -l vlan &> /dev/null
+if [ "$?" == "1" ]; then
+  packages="$packages vlan"
 fi
 
-echo "install required packages"
-apt-get install -yqq vlan avahi-utils
+dpkg -l avahi-utils &> /dev/null
+if [ "$?" == "1" ]; then
+  packages="$packages avahi-utils"
+fi
+
+dpkg -l dnsmasq &> /dev/null
+if [ "$?" == "1" ]; then
+  packages="$packages dnsmasq"
+fi
+
+if [ ! -z "$packages" ]; then
+  echo "Updating package list"
+  apt-get update -qq
+  run_apt_update=0
+  echo "install required packages $packages"
+  apt-get install -yqq $packages
+fi
 }
 
 createvlan () {
@@ -83,10 +96,14 @@ configdhcp () {
 echo "setup dnsmasq dhcp server"
 
 # check if dnsmasq is installed
-dnsmasq=$(dpkg -l dnsmasq &> /dev/null)
-exit_dnsmasq=$?
-if [ "$exit_dnsmasq" == "1" ]; then
-apt-get install -yqq --force-yes dnsmasq
+dpkg -l dnsmasq &> /dev/null
+if [ "$?" == "1" ]; then
+  if [ "$run_apt_update" == "1" ]; then
+    echo "Updating package list"
+    apt-get update -qq
+  fi
+  echo "Installing dnsmasq package"
+  apt-get install -yqq --force-yes dnsmasq
 fi
 
 
