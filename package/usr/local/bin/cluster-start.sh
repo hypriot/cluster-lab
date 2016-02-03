@@ -10,7 +10,7 @@ done
 
 echo Ping to IP address 8.8.8.8 was successful.
 
-echo Updating time not that I am online...
+echo Updating time now that I am online...
 ntpdate -u pool.ntp.org
 
 }
