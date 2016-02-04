@@ -6,6 +6,7 @@ build:
   commands:
     - apt-get update && apt-get install -y git curl bash make ca-certificates
     - export VERSION=$(cat VERSION)
+    - export DEPENDENCIES=$(cat DEPENDENCIES)
     - export OUTPUT_NAME=$(basename `git rev-parse --show-toplevel`)
     - export PACKAGE_VERSION=${VERSION}-${DRONE_BUILD_NUMBER}
     - export PACKAGE_NAME=hypriot-cluster-lab
@@ -20,10 +21,11 @@ build:
     - sed -i'' "s/<NAME>/hypriot-${OUTPUT_NAME}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - sed -i'' "s/<SIZE>/1000000/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - sed -i'' "s/<DESCRIPTION>/${DESCRIPTION}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
+    - sed -i'' "s/<DEPENDS>/${DEPENDENCIES}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - cd ${BUILD_DIR}/package && dpkg-deb --build ${PACKAGE_NAME}
     - rm -R ${BUILD_DIR}/package/${PACKAGE_NAME}
-    - echo "upload debian package to package cloud"
-    - curl -X POST https://$PACKAGECLOUD_API_TOKEN:@packagecloud.io/api/v1/repos/$PACKAGECLOUD_USER_REPO/packages.json -F "package[distro_version_id]=24" -F "package[package_file]=@${BUILD_DIR}/package/${PACKAGE_NAME}.deb"
+#    - echo "upload debian package to package cloud"
+#    - curl -X POST https://$PACKAGECLOUD_API_TOKEN:@packagecloud.io/api/v1/repos/$PACKAGECLOUD_USER_REPO/packages.json -F "package[distro_version_id]=24" -F "package[package_file]=@${BUILD_DIR}/package/${PACKAGE_NAME}.deb"
 
 publish:
   s3:
