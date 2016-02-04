@@ -1,0 +1,10 @@
+[Unit]
+Description=hypriot-cluster-lab
+Wants=network-online.target docker.service
+After=network.target network-online.target docker.service
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+ExecStart=/usr/local/bin/cluster-start.sh
+ExecStop=/usr/local/bin/cluster-stop.sh
+Type=oneshot

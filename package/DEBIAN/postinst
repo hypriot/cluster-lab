@@ -1,3 +1,2 @@
 #!/bin/sh
-systemctl enable cluster-start.service
-systemctl enable cluster-stop.service
+systemctl enable hypriot-cluster.service
