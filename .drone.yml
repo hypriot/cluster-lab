@@ -19,7 +19,7 @@ build:
     - cp -r package/* ${BUILD_DIR}/package/${PACKAGE_NAME}/
     - sed -i'' "s/<VERSION>/${PACKAGE_VERSION}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - sed -i'' "s/<NAME>/hypriot-${OUTPUT_NAME}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
-    - sed -i'' "s/<SIZE>/1000000/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
+    - sed -i'' "s/<SIZE>/60/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - sed -i'' "s/<DESCRIPTION>/${DESCRIPTION}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - sed -i'' "s/<DEPENDS>/${DEPENDENCIES}/g" ${BUILD_DIR}/package/${PACKAGE_NAME}/DEBIAN/control
     - cd ${BUILD_DIR}/package && dpkg-deb --build ${PACKAGE_NAME}
