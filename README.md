@@ -97,7 +97,7 @@ If you wanna know more about why we created this project, please see our [corres
     
   - Use a container on a different node to ping the web server within the virtual network. Here, the node's hostname is **node3**:
 
-    `docker run -it --rm --net=my-net --env="contraint:node=node3" hypriot/armhf-busybox wget -O- http://web`
+    `docker run -it --rm --net=my-net --env="constraint:node=node3" hypriot/armhf-busybox wget -O- http://web`
 
 Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orchestration-networking/swarm-local.sh), ported by @StefanScherer.
 
