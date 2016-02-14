@@ -170,7 +170,7 @@ echo "create docker compose for consul"
 cat << EOM > /usr/local/bin/cluster.yml
 swarm:
   image: hypriot/rpi-swarm
-  command: join --advertise ${SELFIP}:2375 consul://${SELFIP}:8500/dc1
+  command: join --advertise ${SELFIP}:2375 consul://${SELFIP}:8500
 
 consul:
   image: hypriot/rpi-consul:0.6.0
@@ -192,7 +192,7 @@ swarmmanage:
   image: hypriot/rpi-swarm
   ports:
     - 2378:2375
-  command: manage consul://${SELFIP}:8500/dc1
+  command: manage consul://${SELFIP}:8500
 EOM
 
 elif [ "$MASTERorSLAVE" == "slave" ]; then
