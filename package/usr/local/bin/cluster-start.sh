@@ -1,50 +1,5 @@
 #!/bin/bash
 
-run_apt_update=1
-
-checkconnectivity(){
-# Do not proceed until ping to 8.8.8.8 is successful
-while ! ping -c 1 8.8.8.8 &> /dev/null
-do
-  echo Ping to IP address 8.8.8.8 was not successful. Retrying...
-  sleep 3
-done
-
-echo Ping to IP address 8.8.8.8 was successful.
-
-echo Updating time now that I am online...
-ntpdate -u pool.ntp.org
-
-}
-
-prepare () {
-
-packages=""
-
-dpkg -l vlan &> /dev/null
-if [ "$?" == "1" ]; then
-  packages="$packages vlan"
-fi
-
-dpkg -l avahi-utils &> /dev/null
-if [ "$?" == "1" ]; then
-  packages="$packages avahi-utils"
-fi
-
-dpkg -l dnsmasq &> /dev/null
-if [ "$?" == "1" ]; then
-  packages="$packages dnsmasq"
-fi
-
-if [ ! -z "$packages" ]; then
-  echo "Updating package list"
-  apt-get update -qq
-  run_apt_update=0
-  echo "install required packages $packages"
-  apt-get install -yqq $packages
-fi
-}
-
 createvlan () {
 echo "create vlan with tag 200 on eth0"
 ip link add link eth0 name eth0.200 type vlan id 200
@@ -74,7 +29,9 @@ echo "configure avahi only on eth0.200 \(vlan with id 200\)"
 sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=eth1,eth0,wlan0,docker0/' /etc/avahi/avahi-daemon.conf
 sed -i -e 's/#allow-interfaces=eth0/allow-interfaces=eth0.200/' /etc/avahi/avahi-daemon.conf
 sed -i -e 's/use-ipv6=yes/use-ipv6=no/' /etc/avahi/avahi-daemon.conf
+}
 
+restartavahi () {
 echo "restart avahi with new config"
 systemctl restart avahi-daemon.service
    
@@ -241,8 +198,6 @@ EOM
 
 fixrouting
 echo -e "#---------\n# prepare cluster lab\n#---------"
-checkconnectivity
-prepare
 createvlan
 configavahi
 
@@ -294,6 +249,7 @@ fixrouting
 MASTERorSLAVE="slave"
 
 fi
+restartavahi
 
 echo get "self ip"
 SELFIP=$(ip addr s dev eth0.200 | grep -v inet6 | grep inet | awk '{print $2 }' | cut -d'/'  -f 1)
