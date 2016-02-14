@@ -74,6 +74,10 @@ echo "configure avahi only on eth0.200 \(vlan with id 200\)"
 sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=eth1,eth0,wlan0,docker0/' /etc/avahi/avahi-daemon.conf
 sed -i -e 's/#allow-interfaces=eth0/allow-interfaces=eth0.200/' /etc/avahi/avahi-daemon.conf
 sed -i -e 's/use-ipv6=yes/use-ipv6=no/' /etc/avahi/avahi-daemon.conf
+
+echo "restart avahi with new config"
+systemctl restart avahi-daemon.service
+   
 }
 
 createavahiclusterservice () {
