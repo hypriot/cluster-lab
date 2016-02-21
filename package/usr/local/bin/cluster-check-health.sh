@@ -52,25 +52,37 @@ function check_networking(){
   ping -W 1 -c 2 "${VLAN_LEADER_IP}" > /dev/null 2>&1
   evaluate_result $? "  Cluster leader is reachable"
 
-  # TODO
-  # - no two ips on eth0.200
-  # - no linklocal address on eth0.200
+  number_of_ips=$(ip addr show dev eth0.${VLAN_ID} | grep "inet\s" | wc -l)
+  [[ "$number_of_ips" -eq 1 ]] 
+  evaluate_result $? "  eth0.${VLAN_ID} has exactly one IP"
+
+  regex="169\.254\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+  [[ ! "$(ip_of_interface eth0.${VLAN_ID})" =~ $regex ]] 
+  evaluate_result $? "  eth0.${VLAN_ID} has no local link address"
 }
 
 function check_docker(){
- 
-# TODO
-# 
-# docker info
-# cluster store: consul://192.168.200.1:8500
-# Cluster advertise: 192.168.200.1:2375
-# eventually number running containers
+  echo -e "\nDocker"
+  
+  pgrep docker > /dev/null 2>&1
+  evaluate_result $? "  docker is running"
+  
+  docker_info_result=$(docker info | grep -E "Cluster\s(store|advertise):")
+  echo "$docker_info_result" | grep -q -E 'Cluster\sstore:\sconsul:\/\/192\.168\.200\.1:8500'
+  evaluate_result $? "  docker is configured to use consul as key-value store"
+  
+  echo "$docker_info_result" | grep -q -E 'Cluster\sadvertise:\s192\.168\.200\.1:2375'
+  evaluate_result $? "  docker is configured to listen via tcp at port 2375"
+  
+  netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E '192\.168\.200\.1:2375'
+  evaluate_result $? "  docker listens on 192.168.200.1 via tcp at port 2375 (Docker-Engine)"
 
-# check listening ports -> netstat -tulpen
+  netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E '192\.168\.200\.1:7946'
+  evaluate_result $? "  docker listens on 192.168.200.1 via tcp at port 7946 (Serf)"
 }
 
-
 function check_consul(){
+  echo -e "\nConsul"
 
 # check running container
 # check listening ports -> netstat tulpen
@@ -80,3 +92,4 @@ function check_consul(){
 }
 
 check_networking
+check_docker
