@@ -18,7 +18,8 @@ function evaluate_result(){
   fi
 }
 
-function ip_of_interface() {
+# helper functions
+function ip_of_interface(){
   local interface=$1
   local all_ip_addresses=$(hostname -I)
   local interface_ip=$(ip a s "$interface")
@@ -29,6 +30,7 @@ function ip_of_interface() {
   done
 }
 
+# check functions
 function check_networking(){
   echo -e "\nNetworking"
 
