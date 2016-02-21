@@ -2,6 +2,12 @@
 # This script checks if all the prerequisites
 # for the Cluster Lab are present and working.
 
+# TODO
+# - add failure counter
+# - add message if failure counter > 0 on how 
+#   to reset Cluster Lab
+
+
 # Parameter 1 is return value
 # Parameter 2 is message
 function evaluate_result(){
@@ -65,7 +71,24 @@ function check_docker_images(){
   done
 }
 
+function check_config_files(){
+  echo -e "\nCheck original configuration is restored"
+
+  [[ (! -f "/etc/avahi/services/cluster-lab-master.service") && (! -f "/etc/avahi/services/cluster-master.service") ]]
+  evaluate_result $? "  Cluster Lab Master Avahi config file is removed"
+  
+  [[ (! -f "/etc/avahi/avahi-daemon.conf.cluster-lab-backup") && (! -f "/etc/avahi/avahi-daemon.conf_bak") ]]
+  evaluate_result $? "  /etc/avahi/avahi-daemon.conf backup file is removed"
+
+  [[ (! -f "/etc/dnsmasq.conf.cluster-lab-backup") && (! -f "/etc/dnsmasq.conf_bak") ]]
+  evaluate_result $? "  /etc/dnsmasq.conf backup file is removed"
+
+  [[ (! -f "/etc/default/docker.cluster-lab-backup") && (! -f "/etc/default/docker_bak") ]]
+  evaluate_result $? "  /etc/default/docker backup file is removed"
+}
+
 check_networking
 check_os_packages
 check_processes
 check_docker_images
+check_config_files
