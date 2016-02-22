@@ -18,7 +18,6 @@ function evaluate_result(){
   fi
 }
 
-# helper functions
 function ip_of_interface(){
   local interface=$1
   local all_ip_addresses=$(hostname -I)
@@ -28,6 +27,27 @@ function ip_of_interface(){
         echo "$ip_address"
       fi
   done
+}
+
+function docker_images(){
+  if [[ -z "$DOCKER_IMAGES" ]]; then
+    DOCKER_IMAGES=$(docker images)
+  fi
+  echo "$DOCKER_IMAGES"
+}
+
+function docker_container(){
+  if [[ -z "$DOCKER_CONTAINER" ]]; then
+    DOCKER_CONTAINER=$(docker ps)
+  fi
+  echo "$DOCKER_CONTAINER"
+}
+
+function docker_info(){
+  if [[ -z "$DOCKER_INFO" ]]; then
+    DOCKER_INFO=$(docker info)
+  fi
+  echo "$DOCKER_INFO"
 }
 
 # check functions
@@ -68,12 +88,10 @@ function check_docker(){
   
   pgrep docker > /dev/null 2>&1
   evaluate_result $? "  docker is running"
-  
-  docker_info_result=$(docker info | grep -E "Cluster\s(store|advertise):")
-  echo "$docker_info_result" | grep -q -E 'Cluster\sstore:\sconsul:\/\/192\.168\.200\.1:8500'
+  docker_info | grep -q -E 'Cluster\sstore:\sconsul:\/\/192\.168\.200\.1:8500'
   evaluate_result $? "  docker is configured to use consul as key-value store"
   
-  echo "$docker_info_result" | grep -q -E 'Cluster\sadvertise:\s192\.168\.200\.1:2375'
+  docker_info | grep -q -E 'Cluster\sadvertise:\s192\.168\.200\.1:2375'
   evaluate_result $? "  docker is configured to listen via tcp at port 2375"
   
   netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E '192\.168\.200\.1:2375'
@@ -83,15 +101,20 @@ function check_docker(){
   evaluate_result $? "  docker listens on 192.168.200.1 via tcp at port 7946 (Serf)"
 }
 
-function check_consul(){
-  echo -e "\nConsul"
-
-# check running container
 # check listening ports -> netstat tulpen
 # consul members
 # consul info
 
+function check_consul(){
+  echo -e "\nConsul"
+  
+  docker_images | grep -q 'consul'
+  evaluate_result $? "  Consul Docker image exists"
+
+  docker_container | grep -q 'consul agent -serve'
+  evaluate_result $? "  Consul Docker container is running"
 }
 
 check_networking
 check_docker
+check_consul
