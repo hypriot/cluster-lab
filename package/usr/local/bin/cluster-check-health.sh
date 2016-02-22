@@ -8,6 +8,8 @@
 VLAN_ID=200
 VLAN_LEADER_IP="192.168.200.1"
 
+###  helper functions
+
 # Parameter 1 is return value
 # Parameter 2 is message
 function evaluate_result(){
@@ -50,7 +52,8 @@ function docker_info(){
   echo "$DOCKER_INFO"
 }
 
-# check functions
+###  check functions
+
 function check_networking(){
   echo -e "\nNetworking"
 
