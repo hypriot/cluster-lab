@@ -160,6 +160,15 @@ function check_consul(){
   evaluate_result $? "  No Cluster-Node is in status 'failed'" 
 }
 
+function check_swarm(){
+  echo -e "\nSwarm"
+
+  number_of_alive_consul_nodes=$(docker exec -it bin_consul_1 /consul members | grep -c 'alive')
+  number_of_swarm_nodes=$(docker -H "tcp://${VLAN_LEADER_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
+  [[ $number_of_swarm_nodes -eq $number_of_alive_consul_nodes ]]
+  evaluate_result $? "  Number of Swarm and Consul nodes is equal" 
+}
+
 # Variables that use some helper functions
 VLAN_NODE_IP="$(ip_of_interface "${VLAN_INTERFACE}")"
 ESCAPED_VLAN_NODE_IP=$(escape_ip_for_regex "${VLAN_NODE_IP}")
@@ -167,3 +176,4 @@ ESCAPED_VLAN_NODE_IP=$(escape_ip_for_regex "${VLAN_NODE_IP}")
 check_networking
 check_docker
 check_consul
+check_swarm
