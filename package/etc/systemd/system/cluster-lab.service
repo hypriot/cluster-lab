@@ -1,0 +1,13 @@
+[Unit]
+Description=hypriot-cluster-lab
+Wants=network-online.target
+#After=network.target network-online.target docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/cluster-lab start
+ExecStop=/usr/local/bin/cluster-lab stop
+
+[Install]
+WantedBy=multi-user.target
