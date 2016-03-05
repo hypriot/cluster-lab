@@ -12,7 +12,7 @@ PACKAGE_NAME="${PROJECT_NAME}_${PACKAGE_VERSION}"
 TIMESTAMP="$(date +"%Y-%m-%d_%H%M")"
 COMMIT="$(git rev-parse --short HEAD)"
 
-#rm -f ${BUILD_DIR}/${PACKAGE_NAME}.deb
+rm -f ${BUILD_DIR}/${PACKAGE_NAME}.deb
 
 mkdir -p ${BUILD_DIR}/${PACKAGE_NAME}
 cp -r package/* ${BUILD_DIR}/${PACKAGE_NAME}/
