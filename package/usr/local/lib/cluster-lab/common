@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+function evaluate_result(){
+  local returnvalue="${1}"
+  local message="${2}"
+  if [ "$returnvalue" -eq 0 ]; then
+    echo -e "\e[32m  [PASS] ${message}\e[0m"
+  else
+    echo -e "\e[31m  [FAIL] ${message}\e[0m"
+    ERROR=1
+  fi
+}
+
+function exit_with_message_on_error(){
+  local returnvalue=${1}
+  local message="${2}"
+  if [[ ${returnvalue} -gt 0 ]]; then
+    echo "${message}"
+    exit 1
+  fi
+}
+
+function get_ip_of_interface(){
+  local interface="${1}"
+  local all_ip_addresses=$(hostname -I)
+  local interface_ip=$(ip a s "$interface")
+  for ip_address in $all_ip_addresses; do
+    if [[ "$interface_ip" == *"$ip_address"* ]]; then
+      echo "$ip_address"
+    fi
+  done
+}
+
+function escape_ip_for_regex(){
+  local ip_to_escape="$1"
+  echo "${ip_to_escape//\./\\\.}"
+}
+
+function check_if_process_exists() {
+  local process="$1"
+  pgrep "$process" > /dev/null 2>&1
+  return $?
+}
+
+function check_if_os_package_exists(){
+  package="$1"
+  dpkg -l | grep -q -E "^ii\s*${package}"
+  return $?
+}

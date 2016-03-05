@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# include common helper functions
+. /usr/local/lib/cluster-lab/common
+
+# include cluster-lab config
+. /etc/cluster-lab/cluster.conf
+
+# include cluster-lab functions
+for sourcefile in /usr/local/lib/cluster-lab/*_lib; do
+  . $sourcefile
+done
+
+usage () {
+cat << EOM
+usage:
+        $0 start            Start the cluster lab.
+
+        $0 stop             Stop the cluster lab.
+
+EOM
+}
+
+function start(){
+  check_internet_connection
+
+  pre_check_networking
+  exit_with_message_on_error $? "Networking is broken"
+
+  configure_networking
+
+  post_check_networking
+  exit_with_message_on_error $? "Networking  broken"
+
+  # start additional services if cluster leader
+  if [[ "$(is_node_cluster_leader)" == "0" ]]; then
+    echo -e "\n\e[34mThis node is Leader\e[0m"
+    pre_check_clusterleader
+    configure_clusterleader
+    post_check_clusterleader
+  else
+    echo -e "\n\e[34mThis node is Follower\e[0m"
+  fi
+  pre_check_docker
+  configure_docker
+  post_check_docker
+
+  pre_check_docker_container
+  run_docker_container
+  post_check_docker_container
+
+}
+
+function stop(){
+  reset_clusterleader
+  pre_check_clusterleader
+
+  reset_docker
+  pre_check_docker
+
+  remove_docker_container
+
+  reset_networking
+  pre_check_networking
+  check_internet_connection
+}
+
+if [ $# -eq 1 ]; then
+  case "$1" in
+    "start" )
+      start
+      ;;
+    "stop" )
+      stop
+      ;;
+    * )
+      ;;
+  esac
+elif [[ $DEBUG == "true" ]]; then
+  eval "$@"
+else
+  usage
+fi

@@ -1,2 +1,2 @@
 #!/bin/sh
-systemctl enable hypriot-cluster.service
+systemctl enable cluster-lab.service

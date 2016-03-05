@@ -19,7 +19,7 @@ VLAN_INTERFACE="eth0.${VLAN_ID}"
 function evaluate_result(){
   if [ "$1" -eq 0 ]; then
     echo -e "\e[32m  [PASS] ${2}\e[0m"
-  else 
+  else
     echo -e "\e[31m  [FAIL] ${2}\e[0m"
   fi
 }
@@ -93,33 +93,33 @@ function check_networking(){
 
   # check if the vlan 192.168.200 subnet exists
   regex="$(escape_ip_for_regex "${VLAN_SUBNET}")\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-  [[ "$(ip_of_interface eth0.${VLAN_ID})" =~ $regex ]] 
+  [[ "$(ip_of_interface eth0.${VLAN_ID})" =~ $regex ]]
   evaluate_result $? "  eth0.${VLAN_ID} has correct IP from vlan network"
 
   ping -W 1 -c 2 "${VLAN_LEADER_IP}" > /dev/null 2>&1
   evaluate_result $? "  Cluster leader is reachable"
 
   number_of_ips=$(ip addr show dev eth0.${VLAN_ID} | grep -c "inet\s")
-  [[ "$number_of_ips" -eq 1 ]] 
+  [[ "$number_of_ips" -eq 1 ]]
   evaluate_result $? "  eth0.${VLAN_ID} has exactly one IP"
 
   regex="169\.254\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-  [[ ! "$(ip_of_interface eth0.${VLAN_ID})" =~ $regex ]] 
+  [[ ! "$(ip_of_interface eth0.${VLAN_ID})" =~ $regex ]]
   evaluate_result $? "  eth0.${VLAN_ID} has no local link address"
 }
 
 function check_docker(){
   echo -e "\nDocker"
-  
+
   pgrep docker > /dev/null 2>&1
   evaluate_result $? "  docker is running"
 
   docker_info | grep -q -E "Cluster\sstore:\sconsul:\/\/${ESCAPED_VLAN_NODE_IP}:8500"
   evaluate_result $? "  docker is configured to use consul as key-value store"
-  
+
   docker_info | grep -q -E "Cluster\sadvertise:\s${ESCAPED_VLAN_NODE_IP}:2375"
   evaluate_result $? "  docker is configured to listen via tcp at port 2375"
-  
+
   netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E "${ESCAPED_VLAN_NODE_IP}:2375"
   evaluate_result $? "  docker listens on ${VLAN_NODE_IP} via tcp at port 2375 (Docker-Engine)"
 
@@ -129,7 +129,7 @@ function check_docker(){
 
 function check_consul(){
   echo -e "\nConsul"
-  
+
   docker_images | grep -q 'consul'
   evaluate_result $? "  Consul Docker image exists"
 
@@ -143,8 +143,8 @@ function check_consul(){
     evaluate_result $? "  Consul is listening on port ${port}"
   done
 
-  consul_nodes_from_kv | grep -q "Address" 
-  evaluate_result $? "  Consul API works" 
+  consul_nodes_from_kv | grep -q "Address"
+  evaluate_result $? "  Consul API works"
 
   # extract IPs of all consul nodes from json returned from API
   # ping all IPs
@@ -152,12 +152,12 @@ function check_consul(){
   while read ip_address_snippet ; do
     local ip=$(echo "$ip_address_snippet" | grep -oP "${regex}")
     ping -W 1 -c 2 ${ip} > /dev/null 2>&1
-    evaluate_result $? "  Cluster-Node is pingable with IP ${ip}" 
-  done < <( consul_nodes_from_kv | grep -oP "\"Address\":\"${regex}\"" ) 
+    evaluate_result $? "  Cluster-Node is pingable with IP ${ip}"
+  done < <( consul_nodes_from_kv | grep -oP "\"Address\":\"${regex}\"" )
 
   number_of_failed_consul_nodes=$(docker exec -it bin_consul_1 /consul members | grep -c 'failed')
-  [[ number_of_failed_consul_nodes -eq 0 ]]
-  evaluate_result $? "  No Cluster-Node is in status 'failed'" 
+  [[ $number_of_failed_consul_nodes -eq 0 ]]
+  evaluate_result $? "  No Cluster-Node is in status 'failed'"
 }
 
 function check_swarm(){
@@ -166,7 +166,7 @@ function check_swarm(){
   number_of_alive_consul_nodes=$(docker exec -it bin_consul_1 /consul members | grep -c 'alive')
   number_of_swarm_nodes=$(docker -H "tcp://${VLAN_LEADER_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
   [[ $number_of_swarm_nodes -eq $number_of_alive_consul_nodes ]]
-  evaluate_result $? "  Number of Swarm and Consul nodes is equal" 
+  evaluate_result $? "  Number of Swarm and Consul nodes is equal"
 }
 
 # Variables that use some helper functions
