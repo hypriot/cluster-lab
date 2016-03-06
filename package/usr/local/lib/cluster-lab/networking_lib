@@ -114,6 +114,12 @@ function check_internet_connection(){
   echo -e "\nInternet Connection"
   ERRORS=0
 
+  ip link show | grep -q eth0
+  evaluate_result $? "  eth0 exists"
+
+  [[ ! -z "$(get_ip_of_interface eth0)" ]]
+  evaluate_result $? "  eth0 has an ip address"
+
   ping -W 1 -c 2 8.8.8.8 > /dev/null 2>&1
   evaluate_result $? "  Internet is reachable"
 
@@ -129,9 +135,6 @@ function pre_check_networking(){
 
   ip link show | grep -q eth0
   evaluate_result $? "  eth0 exists"
-
-  [[ ! -z "$(get_ip_of_interface eth0)" ]]
-  evaluate_result $? "  eth0 has an ip address"
 
   check_if_os_package_exists "vlan"
   evaluate_result $? "  vlan os package exists"
