@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
+declare DOCKER_INFO
+
 function docker_info(){
-  if [[ -z "$DOCKER_INFO" ]]; then
+  if [[ -z "${DOCKER_INFO}" ]]; then
     DOCKER_INFO=$(docker info)
   fi
   echo "$DOCKER_INFO"
 }
-
 
 function pre_check_docker(){
   echo -e "\nDocker"

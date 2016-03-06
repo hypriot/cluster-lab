@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+declare NODE_IP
+declare LEADER_IP
+
 # VLAN configuration
 function add_vlan_interface(){
   ip link add link eth0 name "${VLAN_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
@@ -44,7 +47,7 @@ function remove_ip_from_vlan_interface(){
   return $?
 }
 
-function get_current_node_ip(){
+function ensure_node_ip_is_set(){
   if [[ -z "${NODE_IP}" ]]; then
     ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
     timeout 3 dhclient "${VLAN_INTERFACE}"
@@ -59,11 +62,9 @@ function get_current_node_ip(){
       sleep 2
     done
   fi
-  echo "${NODE_IP}"
 }
 
-function get_current_leader_ip(){
-
+function ensure_leader_ip_is_set(){
   if [[ -z "${LEADER_IP}" ]]; then
     add_ip_to_vlan_interface "${VLAN_TEST_IP}"
 
@@ -72,14 +73,14 @@ function get_current_leader_ip(){
 
     remove_ip_from_vlan_interface "${VLAN_TEST_IP}"
   fi
-  echo "${LEADER_IP}"
 }
 
 function is_node_cluster_leader(){
   avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
   local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep 'eth0\.' | grep IPv4 | cut -d ';' -f8)
 
-  [[ "$(get_current_node_ip)" == "${leader_ip}" ]]
+  ensure_node_ip_is_set
+  [[ "${NODE_IP}" == "${leader_ip}" ]]
   echo $?
 }
 
@@ -209,9 +210,9 @@ function post_check_networking(){
 function configure_networking(){
   echo -e "\n\e[34mConfigure basic networking\e[0m"
 
-
   add_vlan_interface
-  if [[ -z "$(get_current_leader_ip)" ]]; then
+  ensure_leader_ip_is_set
+  if [[ -z "${LEADER_IP}" ]]; then
     # there is no leader yet
 
     # ensure that there is no link local ip on the VLAN_INTERFACE
@@ -221,14 +222,15 @@ function configure_networking(){
     add_avahi_cluster_leader_service_file
   else
     # we already have a leader
-    if [[ -z $(get_current_node_ip) ]]; then
+    ensure_node_ip_is_set
+    if [[ -z "${NODE_IP}" ]]; then
       # we did not get an ip from dhcp or link local
       echo -e "Failed to configure networking. Could not get an IP.\nTrying to rollback networking configuration"
       reset_networking
       exit 1
     else
       # we have an ip
-      if [[ "$(is_link_local_ip "$(get_current_node_ip)")" == "1" ]]; then
+      if [[ "$(is_link_local_ip "${NODE_IP}")" == "1" ]]; then
         # we did not get an ip from dhcp
         echo -e "Failed to configure networking: Could not get an IP via DHCP. \nTrying to rollback networking configuration"
         reset_networking
