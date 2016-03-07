@@ -5,13 +5,21 @@ declare LEADER_IP
 
 # VLAN configuration
 function add_vlan_interface(){
-  ip link add link eth0 name "${VLAN_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
-  return $?
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    ip link add link "${INTERFACE}" name "${VLAN_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
+    return $?
+  else
+    return 0
+  fi
 }
 
 function remove_vlan_interface(){
-  ip link delete dev "${VLAN_INTERFACE}" type vlan > /dev/null 2>&1
-  return $?
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    ip link delete dev "${VLAN_INTERFACE}" type vlan > /dev/null 2>&1
+    return $?
+  else
+    return 0
+  fi
 }
 
 # setup avahi-daemon
@@ -22,9 +30,9 @@ function configure_avahi(){
   fi
   # change configuration
   # disable avahi on wlan0 and docker0
-  sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=eth1,wlan0,docker0/'  /etc/avahi/avahi-daemon.conf
-  # enable avahi on eth0 and ${VLAN_INTERFACE}
-  sed -i -e "s/#allow-interfaces=eth0/allow-interfaces=eth0,${VLAN_INTERFACE}/"  /etc/avahi/avahi-daemon.conf
+#  sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=eth1,wlan0,docker0/'  /etc/avahi/avahi-daemon.conf
+  # enable avahi on ${INTERFACE} and ${VLAN_INTERFACE}
+  sed -i -e "s/#allow-interfaces=eth0/allow-interfaces=${INTERFACE},${VLAN_INTERFACE}/"  /etc/avahi/avahi-daemon.conf
   # disable use of IPv6 addresses
   sed -i -e 's/use-ipv6=yes/use-ipv6=no/' /etc/avahi/avahi-daemon.conf
 
@@ -50,7 +58,12 @@ function remove_ip_from_vlan_interface(){
 function ensure_node_ip_is_set(){
   if [[ -z "${NODE_IP}" ]]; then
     ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
-    timeout 3 dhclient "${VLAN_INTERFACE}"
+#    if [[ -f "/var/run/dhclient_${VLAN_INTERFACE}.pid" ]]; then
+#      kill -9 "$(cat /var/run/dhclient_"${VLAN_INTERFACE}".pid)"
+#    fi
+#    timeout 3 dhclient -x -pf /var/run/dhclient_"${VLAN_INTERFACE}".pid "${VLAN_INTERFACE}"
+     timeout 3 dhclient "${VLAN_INTERFACE}"
+
 
     # try 3 times to get an ip address
     for i in {1..3}; do
@@ -69,7 +82,7 @@ function ensure_leader_ip_is_set(){
     add_ip_to_vlan_interface "${VLAN_TEST_IP}"
 
     avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable --ignore-local)
-    LEADER_IP=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep 'eth0\.' | grep IPv4 | cut -d ';' -f8)
+    LEADER_IP=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${INTERFACE}\." | grep IPv4 | cut -d ';' -f8)
 
     remove_ip_from_vlan_interface "${VLAN_TEST_IP}"
   fi
@@ -77,7 +90,7 @@ function ensure_leader_ip_is_set(){
 
 function is_node_cluster_leader(){
   avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
-  local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep 'eth0\.' | grep IPv4 | cut -d ';' -f8)
+  local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${INTERFACE}\." | grep IPv4 | cut -d ';' -f8)
 
   ensure_node_ip_is_set
   [[ "${NODE_IP}" == "${leader_ip}" ]]
@@ -114,11 +127,11 @@ function check_internet_connection(){
   echo -e "\nInternet Connection"
   ERRORS=0
 
-  ip link show | grep -q eth0
-  evaluate_result $? "  eth0 exists"
+  ip link show | grep -q "${INTERFACE}"
+  evaluate_result $? "  ${INTERFACE} exists"
 
-  [[ ! -z "$(get_ip_of_interface eth0)" ]]
-  evaluate_result $? "  eth0 has an ip address"
+  [[ ! -z "$(get_ip_of_interface "${INTERFACE}")" ]]
+  evaluate_result $? "  ${INTERFACE} has an ip address"
 
   ping -W 1 -c 2 8.8.8.8 > /dev/null 2>&1
   evaluate_result $? "  Internet is reachable"
@@ -133,8 +146,8 @@ function pre_check_networking(){
   echo -e "\nNetworking"
   ERRORS=0
 
-  ip link show | grep -q eth0
-  evaluate_result $? "  eth0 exists"
+  ip link show | grep -q "${INTERFACE}"
+  evaluate_result $? "  ${INTERFACE} exists"
 
   check_if_os_package_exists "vlan"
   evaluate_result $? "  vlan os package exists"
@@ -167,27 +180,27 @@ function post_check_networking(){
   echo -e "\nNetworking"
   ERRORS=0
 
-  ip link show | grep -q eth0
-  evaluate_result $? "  eth0 exists"
+  ip link show | grep -q "${INTERFACE}"
+  evaluate_result $? "  ${INTERFACE} exists"
 
-  ip link show | grep -q "eth0.${VLAN_ID}"
-  evaluate_result $? "  eth0.${VLAN_ID} exists"
+  ip link show | grep -q "${VLAN_INTERFACE}"
+  evaluate_result $? "  ${VLAN_INTERFACE} exists"
 
   # check if the vlan 192.168.200 subnet exists
   regex="$(escape_ip_for_regex "${VLAN_SUBNET}")\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-  [[ "$(get_ip_of_interface "eth0.${VLAN_ID}")" =~ $regex ]]
-  evaluate_result $? "  eth0.${VLAN_ID} has correct IP from vlan network"
+  [[ "$(get_ip_of_interface "${VLAN_INTERFACE}")" =~ $regex ]]
+  evaluate_result $? "  ${VLAN_INTERFACE} has correct IP from vlan network"
 
   ping -W 1 -c 2 "${VLAN_LEADER_IP}" > /dev/null 2>&1
   evaluate_result $? "  Cluster leader is reachable"
 
-  number_of_ips=$(ip addr show dev "eth0.${VLAN_ID}" | grep -c "inet\s")
+  number_of_ips=$(ip addr show dev "${VLAN_INTERFACE}" | grep -c "inet\s")
   [[ "$number_of_ips" -eq 1 ]]
-  evaluate_result $? "  eth0.${VLAN_ID} has exactly one IP"
+  evaluate_result $? "  ${VLAN_INTERFACE} has exactly one IP"
 
   regex="169\.254\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-  [[ ! "$(get_ip_of_interface "eth0.${VLAN_ID}")" =~ $regex ]]
-  evaluate_result $? "  eth0.${VLAN_ID} has no local link address"
+  [[ ! "$(get_ip_of_interface "${VLAN_INTERFACE}")" =~ $regex ]]
+  evaluate_result $? "  ${VLAN_INTERFACE} has no local link address"
 
   check_if_process_exists "avahi"
   evaluate_result $? "  Avahi process exists"
@@ -248,7 +261,12 @@ function configure_networking(){
 function reset_networking(){
   echo -e "\n\e[34mReset basic networking\e[0m"
 
+#  if [[ -f "/var/run/dhclient_${VLAN_INTERFACE}.pid" ]]; then
+#    kill -9 "$(cat /var/run/dhclient_"${VLAN_INTERFACE}".pid)"
+#  fi
+
   remove_vlan_interface
+
   if [ -f "/etc/avahi/avahi-daemon.conf.cluster-lab-backup" ]; then
     mv -f /etc/avahi/avahi-daemon.conf.cluster-lab-backup /etc/avahi/avahi-daemon.conf
     systemctl reload avahi-daemon.service
