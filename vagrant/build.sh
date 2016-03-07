@@ -15,7 +15,8 @@ COMMIT="$(git rev-parse --short HEAD)"
 rm -f ${BUILD_DIR}/${PACKAGE_NAME}.deb
 
 mkdir -p ${BUILD_DIR}/${PACKAGE_NAME}
-cp -r package/* ${BUILD_DIR}/${PACKAGE_NAME}/
+cp -r ../package/* ${BUILD_DIR}/${PACKAGE_NAME}/
+sed -i'' "s/INTERFACE=\"eth0\"/INTERFACE=\"eth1\"/g" ${BUILD_DIR}/${PACKAGE_NAME}/etc/cluster-lab/cluster.conf
 sed -i'' "s/<VERSION>/${PACKAGE_VERSION}/g" ${BUILD_DIR}/${PACKAGE_NAME}/DEBIAN/control
 sed -i'' "s/<NAME>/${PROJECT_NAME}/g" ${BUILD_DIR}/${PACKAGE_NAME}/DEBIAN/control
 sed -i'' "s/<SIZE>/60/g" ${BUILD_DIR}/${PACKAGE_NAME}/DEBIAN/control
