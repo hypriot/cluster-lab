@@ -42,10 +42,10 @@ function configure_avahi(){
 # IP configuration
 function add_ip_to_vlan_interface(){
   local ip="$1"
-  if [[ "${ENABLE_DHCP}" == "true" ]]; then
-    ip addr add "${ip}${VLAN_NETMASK}" dev "${VLAN_INTERFACE}" > /dev/null 2>&1
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    ip addr add "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
     if [[ $? == 0 ]]; then
-      ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
+      ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
       return $?
     else
       return 1
@@ -57,8 +57,8 @@ function add_ip_to_vlan_interface(){
 
 function remove_ip_from_vlan_interface(){
   local ip="$1"
-  if [[ "${ENABLE_DHCP}" == "true" ]]; then
-    ip addr delete "${ip}${VLAN_NETMASK}" dev "${VLAN_INTERFACE}" > /dev/null 2>&1
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    ip addr delete "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
     return $?
   else
     return 0
@@ -68,8 +68,8 @@ function remove_ip_from_vlan_interface(){
 function ensure_node_ip_is_set(){
   if [[ -z "${NODE_IP}" ]]; then
     if [[ "${ENABLE_DHCP}" == "true" ]]; then
-      ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
-      timeout 3 dhclient "${VLAN_INTERFACE}"
+      ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
+      timeout 3 dhclient "${CLUSTER_INTERFACE}"
     fi
 
     # try 3 times to get an ip address
@@ -86,21 +86,18 @@ function ensure_node_ip_is_set(){
 
 function ensure_leader_ip_is_set(){
   if [[ -z "${LEADER_IP}" ]]; then
-    if [[ "${ENABLE_VLAN}" == "true" ]]; then
-      add_ip_to_vlan_interface "${VLAN_TEST_IP}"
-    fi
-    avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable --ignore-local)
-    LEADER_IP=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${INTERFACE}" | grep IPv4 | cut -d ';' -f8)
+    add_ip_to_vlan_interface "${VLAN_TEST_IP}"
 
-    if [[ "${ENABLE_VLAN}" == "true" ]]; then
-      remove_ip_from_vlan_interface "${VLAN_TEST_IP}"
-    fi
+    avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable --ignore-local)
+    LEADER_IP=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
+
+    remove_ip_from_vlan_interface "${VLAN_TEST_IP}"
   fi
 }
 
 function is_node_cluster_leader(){
   avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
-  local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${INTERFACE}" | grep IPv4 | cut -d ';' -f8)
+  local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
 
   ensure_node_ip_is_set
   [[ "${NODE_IP}" == "${leader_ip}" ]]
@@ -242,13 +239,11 @@ function configure_networking(){
     # there is no leader yet
 
     if [[ "${ENABLE_VLAN}" == "true" ]]; then
-      # ensure that there is no link local ip on the VLAN_INTERFACE
-      ip addr flush dev "${VLAN_INTERFACE}"
+      # ensure that there is no link local ip on the CLUSTER_INTERFACE
+      ip addr flush dev "${CLUSTER_INTERFACE}"
     fi
 
-    if [[ "${ENABLE_DHCP}" == "true" ]]; then
-      add_ip_to_vlan_interface "${VLAN_LEADER_IP}"
-    fi
+    add_ip_to_vlan_interface "${VLAN_LEADER_IP}"
     add_avahi_cluster_leader_service_file
   else
     # we already have a leader
