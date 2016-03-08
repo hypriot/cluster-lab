@@ -68,17 +68,13 @@ function check_consul(){
   evaluate_result $? "  Consul API works"
 
   # extract IPs of all consul nodes from json returned from API
-  # ping all IPs
-    test=1
+  # ping all IPs to make sure they can be reached via network
   regex="((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))"
   while read ip_address_snippet ; do
-    test=0
     local ip=$(echo "$ip_address_snippet" | grep -oP "${regex}")
     ping -W 1 -c 2 ${ip} > /dev/null 2>&1
     evaluate_result $? "  Cluster-Node is pingable with IP ${ip}"
   done < <( consul_nodes_from_kv | grep -oP "\"Address\":\"${regex}\"" )
-
-  evaluate_result $test "  Cluster-Node Addresses can be read from Consul"
 
   number_of_failed_consul_nodes=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul /consul members | grep -c 'failed')
   [[ $number_of_failed_consul_nodes -eq 0 ]]
