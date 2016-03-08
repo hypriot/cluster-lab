@@ -112,6 +112,7 @@ function run_docker_container(){
   echo -e "\n\e[34mConfigure Docker containers for consul and swarm\e[0m"
   VLAN_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
 
+  ensure_leader_ip_is_set
   # configure consul start command
   local consul_docker="docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_consul --net host"
   local consul_ports="-p ${VLAN_NODE_IP}:8400:8400 -p ${VLAN_NODE_IP}:8500:8500 -p ${VLAN_NODE_IP}:8600:8600 -p ${VLAN_NODE_IP}:8301:8301 -p ${VLAN_NODE_IP}:8302:8302 ${IMAGE_CONSUL}"
@@ -122,7 +123,7 @@ function run_docker_container(){
     local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${VLAN_NODE_IP} -client 0.0.0.0 -bootstrap-expect 1"
   else
     # this node is cluster follower and should join the existing leader
-    local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${VLAN_NODE_IP} -client 0.0.0.0 -join ${VLAN_LEADER_IP}:8301"
+    local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${VLAN_NODE_IP} -client 0.0.0.0 -join ${LEADER_IP}:8301"
   fi
 
   # consul
