@@ -39,7 +39,7 @@ function consul_members(){
 
 function consul_nodes_from_kv(){
   if [[ -z "$CONSUL_NODES_FROM_KV" ]]; then
-    CONSUL_NODES_FROM_KV="$(curl --silent http://"${VLAN_NODE_IP}":8500/v1/catalog/nodes)"
+    CONSUL_NODES_FROM_KV="$(curl --silent http://"${CLUSTER_NODE_IP}":8500/v1/catalog/nodes)"
   fi
   echo "$CONSUL_NODES_FROM_KV"
 }
@@ -81,10 +81,10 @@ function check_consul(){
   evaluate_result $? "  No Cluster-Node is in status 'failed'"
 
   # Variables that use some helper functions
-  VLAN_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
-  ESCAPED_VLAN_NODE_IP=$(escape_ip_for_regex "${VLAN_NODE_IP}")
+  CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
+  ESCAPED_CLUSTER_NODE_IP=$(escape_ip_for_regex "${CLUSTER_NODE_IP}")
 
-  netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E "${ESCAPED_VLAN_NODE_IP}:7946"
+  netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E "${ESCAPED_CLUSTER_NODE_IP}:7946"
   evaluate_result $? "  Consul is able to talk to docker engine on port 7946 (Serf)"
 
 }
@@ -93,7 +93,7 @@ function check_swarm(){
   echo -e "\nSwarm"
 
   number_of_alive_consul_nodes=$(docker exec -it ${DOCKER_COMPOSE_PROJECT}_consul /consul members | grep -c 'alive')
-  number_of_swarm_nodes=$(docker -H "tcp://${VLAN_NODE_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
+  number_of_swarm_nodes=$(docker -H "tcp://${CLUSTER_NODE_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
   [[ $number_of_swarm_nodes -eq $number_of_alive_consul_nodes ]]
   evaluate_result $? "  Number of Swarm and Consul nodes is equal"
 }
@@ -110,20 +110,20 @@ function post_check_docker_container(){
 # docker container
 function run_docker_container(){
   echo -e "\n\e[34mConfigure Docker containers for consul and swarm\e[0m"
-  VLAN_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
+  CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
 
   ensure_leader_ip_is_set
   # configure consul start command
   local consul_docker="docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_consul --net host"
-  local consul_ports="-p ${VLAN_NODE_IP}:8400:8400 -p ${VLAN_NODE_IP}:8500:8500 -p ${VLAN_NODE_IP}:8600:8600 -p ${VLAN_NODE_IP}:8301:8301 -p ${VLAN_NODE_IP}:8302:8302 ${IMAGE_CONSUL}"
+  local consul_ports="-p ${CLUSTER_NODE_IP}:8400:8400 -p ${CLUSTER_NODE_IP}:8500:8500 -p ${CLUSTER_NODE_IP}:8600:8600 -p ${CLUSTER_NODE_IP}:8301:8301 -p ${CLUSTER_NODE_IP}:8302:8302 ${IMAGE_CONSUL}"
 
 
   if [[ "$(is_node_cluster_leader)" == "0" ]]; then
     # this node is cluster leader and should bootstrap consul
-    local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${VLAN_NODE_IP} -client 0.0.0.0 -bootstrap-expect 1"
+    local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${CLUSTER_NODE_IP} -client 0.0.0.0 -bootstrap-expect 1"
   else
     # this node is cluster follower and should join the existing leader
-    local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${VLAN_NODE_IP} -client 0.0.0.0 -join ${LEADER_IP}:8301"
+    local consul_command="agent -server -rejoin -data-dir /data -ui-dir /ui -bind ${CLUSTER_NODE_IP} -client 0.0.0.0 -join ${LEADER_IP}:8301"
   fi
 
   # consul
@@ -134,10 +134,10 @@ function run_docker_container(){
   sleep 3
 
   # swarm join
-  eval "docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_swarm ${IMAGE_SWARM} join --advertise ${VLAN_NODE_IP}:2375 consul://${VLAN_NODE_IP}:8500"  > /dev/null 2>&1
+  eval "docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_swarm ${IMAGE_SWARM} join --advertise ${CLUSTER_NODE_IP}:2375 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
 
   #swarm manage
-  eval "docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${VLAN_NODE_IP}:2378 consul://${VLAN_NODE_IP}:8500"  > /dev/null 2>&1
+  eval "docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${CLUSTER_NODE_IP}:2378 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
 
 }
 
