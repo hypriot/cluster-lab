@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# give every container started by Cluster Lab
+# a naming prefix
+CLUSTER_LAB_CONTAINER_NAMESPACE="cluster_lab"
+
 function check_docker_images(){
   echo -e "\nDocker Images"
 
@@ -32,7 +36,7 @@ function docker_container(){
 
 function consul_members(){
   if [[ -z "$CONSUL_MEMBERS" ]]; then
-    CONSUL_MEMBERS=$(docker exec -it ${DOCKER_COMPOSE_PROJECT}_consul /consul members)
+    CONSUL_MEMBERS=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul /consul members)
   fi
   echo "$CONSUL_MEMBERS"
 }
@@ -76,7 +80,7 @@ function check_consul(){
 
   evaluate_result $test "  Cluster-Node Addresses can be read from Consul"
 
-  number_of_failed_consul_nodes=$(docker exec -it ${DOCKER_COMPOSE_PROJECT}_consul /consul members | grep -c 'failed')
+  number_of_failed_consul_nodes=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul /consul members | grep -c 'failed')
   [[ $number_of_failed_consul_nodes -eq 0 ]]
   evaluate_result $? "  No Cluster-Node is in status 'failed'"
 
@@ -92,7 +96,7 @@ function check_consul(){
 function check_swarm(){
   echo -e "\nSwarm"
 
-  number_of_alive_consul_nodes=$(docker exec -it ${DOCKER_COMPOSE_PROJECT}_consul /consul members | grep -c 'alive')
+  number_of_alive_consul_nodes=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul /consul members | grep -c 'alive')
   number_of_swarm_nodes=$(docker -H "tcp://${CLUSTER_NODE_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
   [[ $number_of_swarm_nodes -eq $number_of_alive_consul_nodes ]]
   evaluate_result $? "  Number of Swarm and Consul nodes is equal"
@@ -114,7 +118,7 @@ function run_docker_container(){
 
   ensure_leader_ip_is_set
   # configure consul start command
-  local consul_docker="docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_consul --net host"
+  local consul_docker="docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul --net host"
   local consul_ports="-p ${CLUSTER_NODE_IP}:8400:8400 -p ${CLUSTER_NODE_IP}:8500:8500 -p ${CLUSTER_NODE_IP}:8600:8600 -p ${CLUSTER_NODE_IP}:8301:8301 -p ${CLUSTER_NODE_IP}:8302:8302 ${IMAGE_CONSUL}"
 
 
@@ -134,17 +138,17 @@ function run_docker_container(){
   sleep 3
 
   # swarm join
-  eval "docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_swarm ${IMAGE_SWARM} join --advertise ${CLUSTER_NODE_IP}:2375 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
+  eval "docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm ${IMAGE_SWARM} join --advertise ${CLUSTER_NODE_IP}:2375 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
 
   #swarm manage
-  eval "docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${CLUSTER_NODE_IP}:2378 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
+  eval "docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${CLUSTER_NODE_IP}:2378 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
 
 }
 
 function remove_docker_container(){
   echo -e "\n\e[34mRemove Docker container\e[0m"
 
-  docker rm -vf "${DOCKER_COMPOSE_PROJECT}_swarmmanage"   > /dev/null 2>&1
-  docker rm -vf "${DOCKER_COMPOSE_PROJECT}_swarm"   > /dev/null 2>&1
-  docker rm -vf "${DOCKER_COMPOSE_PROJECT}_consul"   > /dev/null 2>&1
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage"   > /dev/null 2>&1
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm"   > /dev/null 2>&1
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul"   > /dev/null 2>&1
 }
