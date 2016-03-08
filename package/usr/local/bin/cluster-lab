@@ -14,9 +14,15 @@ done
 usage () {
 cat << EOM
 usage:
-        $0 start            Start the cluster lab.
+        $0 start            Start the  Cluster Lab.
 
-        $0 stop             Stop the cluster lab.
+        $0 stop             Stop the  Cluster Lab.
+
+        $0 checkdeps        Check dependencies of the Cluster Lab.
+
+        $0 checkhealth      Check health of the Cluster Lab.
+
+        $0 members          Get consul members.
 
 EOM
 }
@@ -68,6 +74,22 @@ function stop(){
   check_internet_connection
 }
 
+function pre_checks(){
+  check_internet_connection
+  pre_check_networking
+  pre_check_clusterleader
+  pre_check_docker
+  pre_check_docker_container
+}
+
+function post_checks(){
+  check_internet_connection
+  post_check_networking
+  post_check_clusterleader
+  post_check_docker
+  post_check_docker_container
+}
+
 if [ $# -eq 1 ]; then
   case "$1" in
     "start" )
@@ -75,6 +97,15 @@ if [ $# -eq 1 ]; then
       ;;
     "stop" )
       stop
+      ;;
+    "checkdeps" )
+      pre_checks
+      ;;
+    "checkhealth" )
+      post_checks
+      ;;
+    "members" )
+      consul_members
       ;;
     * )
       ;;
