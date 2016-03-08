@@ -103,7 +103,9 @@ function check_swarm(){
 }
 
 function pre_check_docker_container(){
-  check_docker_images
+  # maybe we should remove this function
+  # if we do not find a good check/test
+  true
 }
 
 function post_check_docker_container(){

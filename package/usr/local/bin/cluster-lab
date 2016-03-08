@@ -79,6 +79,7 @@ function pre_checks(){
   pre_check_networking
   pre_check_clusterleader
   pre_check_docker
+  check_docker_images
   pre_check_docker_container
 }
 
