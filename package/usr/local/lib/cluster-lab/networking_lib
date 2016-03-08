@@ -6,7 +6,7 @@ declare LEADER_IP
 # VLAN configuration
 function add_vlan_interface(){
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
-    ip link add link "${INTERFACE}" name "${VLAN_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
+    ip link add link "${INTERFACE}" name "${CLUSTER_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
     return $?
   else
     return 0
@@ -15,7 +15,7 @@ function add_vlan_interface(){
 
 function remove_vlan_interface(){
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
-    ip link delete dev "${VLAN_INTERFACE}" type vlan > /dev/null 2>&1
+    ip link delete dev "${CLUSTER_INTERFACE}" type vlan > /dev/null 2>&1
     return $?
   else
     return 0
@@ -31,8 +31,8 @@ function configure_avahi(){
   # change configuration
   # disable avahi on wlan0 and docker0
   sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=wlan0,docker0/'  /etc/avahi/avahi-daemon.conf
-  # enable avahi on ${INTERFACE} and ${VLAN_INTERFACE}
-  sed -i -e "s/#allow-interfaces=eth0/allow-interfaces=${INTERFACE},${VLAN_INTERFACE}/"  /etc/avahi/avahi-daemon.conf
+  # enable avahi on ${INTERFACE} and ${CLUSTER_INTERFACE}
+  sed -i -e "s/#allow-interfaces=eth0/allow-interfaces=${INTERFACE},${CLUSTER_INTERFACE}/"  /etc/avahi/avahi-daemon.conf
   # disable use of IPv6 addresses
   sed -i -e 's/use-ipv6=yes/use-ipv6=no/' /etc/avahi/avahi-daemon.conf
 
@@ -42,30 +42,30 @@ function configure_avahi(){
 # IP configuration
 function add_ip_to_vlan_interface(){
   local ip="$1"
-  ip addr add "${ip}${VLAN_NETMASK}" dev "${VLAN_INTERFACE}" > /dev/null 2>&1
+  ip addr add "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
   if [[ $? == 0 ]]; then
-    ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
+    ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
     return $?
   fi
 }
 
 function remove_ip_from_vlan_interface(){
   local ip="$1"
-  ip addr delete "${ip}${VLAN_NETMASK}" dev "${VLAN_INTERFACE}" > /dev/null 2>&1
+  ip addr delete "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
   return $?
 }
 
 function ensure_node_ip_is_set(){
   if [[ -z "${NODE_IP}" ]]; then
-    ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
+    ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
 
     if [[ "${ENABLE_DHCP}" == "true" ]]; then
-      timeout 3 dhclient "${VLAN_INTERFACE}"
+      timeout 3 dhclient "${CLUSTER_INTERFACE}"
     fi
 
     # try 3 times to get an ip address
     for i in {1..3}; do
-      NODE_IP=$(get_ip_of_interface "${VLAN_INTERFACE}")
+      NODE_IP=$(get_ip_of_interface "${CLUSTER_INTERFACE}")
       if [[ -z "${NODE_IP}" ]]; then
         break
         echo "tried to get ip $i times"
@@ -165,8 +165,8 @@ function pre_check_networking(){
   [[ $(avahi-browse --all --terminate | grep -c 'IPv6') -gt 0 ]]
   evaluate_result $? "  Avahi is using IPv6 addresses"
 
-  [[ $(avahi-browse --all --terminate | grep -c "${VLAN_INTERFACE}") -eq 0 ]]
-  evaluate_result $? "  Avahi is not using ${VLAN_INTERFACE}"
+  [[ $(avahi-browse --all --terminate | grep -c "${CLUSTER_INTERFACE}") -eq 0 ]]
+  evaluate_result $? "  Avahi is not using ${CLUSTER_INTERFACE}"
 
   [[ ! -f "/etc/avahi/services/cluster-leader.service" ]]
   evaluate_result $? "  Avahi cluster-leader.service file is absent"
@@ -181,24 +181,24 @@ function post_check_networking(){
   ip link show | grep -q "${INTERFACE}"
   evaluate_result $? "  ${INTERFACE} exists"
 
-  ip link show | grep -q "${VLAN_INTERFACE}"
-  evaluate_result $? "  ${VLAN_INTERFACE} exists"
+  ip link show | grep -q "${CLUSTER_INTERFACE}"
+  evaluate_result $? "  ${CLUSTER_INTERFACE} exists"
 
   # check if the vlan 192.168.200 subnet exists
   regex="$(escape_ip_for_regex "${VLAN_SUBNET}")\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-  [[ "$(get_ip_of_interface "${VLAN_INTERFACE}")" =~ $regex ]]
-  evaluate_result $? "  ${VLAN_INTERFACE} has correct IP from vlan network"
+  [[ "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" =~ $regex ]]
+  evaluate_result $? "  ${CLUSTER_INTERFACE} has correct IP from vlan network"
 
   ping -W 1 -c 2 "${VLAN_LEADER_IP}" > /dev/null 2>&1
   evaluate_result $? "  Cluster leader is reachable"
 
-  number_of_ips=$(ip addr show dev "${VLAN_INTERFACE}" | grep -c "inet\s")
+  number_of_ips=$(ip addr show dev "${CLUSTER_INTERFACE}" | grep -c "inet\s")
   [[ "$number_of_ips" -eq 1 ]]
-  evaluate_result $? "  ${VLAN_INTERFACE} has exactly one IP"
+  evaluate_result $? "  ${CLUSTER_INTERFACE} has exactly one IP"
 
   regex="169\.254\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
-  [[ ! "$(get_ip_of_interface "${VLAN_INTERFACE}")" =~ $regex ]]
-  evaluate_result $? "  ${VLAN_INTERFACE} has no local link address"
+  [[ ! "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" =~ $regex ]]
+  evaluate_result $? "  ${CLUSTER_INTERFACE} has no local link address"
 
   check_if_process_exists "avahi"
   evaluate_result $? "  Avahi process exists"
@@ -209,8 +209,8 @@ function post_check_networking(){
   [[ $(avahi-browse --all --terminate | grep -c 'IPv6') -eq 0 ]]
   evaluate_result $? "  Avahi is not using IPv6 addresses"
 
-  [[ $(avahi-browse --all --terminate | grep -c "${VLAN_INTERFACE}") -gt 0 ]]
-  evaluate_result $? "  Avahi is using ${VLAN_INTERFACE}"
+  [[ $(avahi-browse --all --terminate | grep -c "${CLUSTER_INTERFACE}") -gt 0 ]]
+  evaluate_result $? "  Avahi is using ${CLUSTER_INTERFACE}"
 
   if [[ $(is_node_cluster_leader) == 0 ]]; then
     [[ -f "/etc/avahi/services/cluster-leader.service" ]]
@@ -229,8 +229,8 @@ function configure_networking(){
   if [[ -z "${LEADER_IP}" ]]; then
     # there is no leader yet
 
-    # ensure that there is no link local ip on the VLAN_INTERFACE
-    ip addr flush dev "${VLAN_INTERFACE}"
+    # ensure that there is no link local ip on the CLUSTER_INTERFACE
+    ip addr flush dev "${CLUSTER_INTERFACE}"
 
     add_ip_to_vlan_interface "${VLAN_LEADER_IP}"
     add_avahi_cluster_leader_service_file

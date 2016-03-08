@@ -39,7 +39,7 @@ function configure_clusterleader(){
   fi
 cat << EOM > /etc/dnsmasq.conf
 
-interface=${VLAN_INTERFACE}
+interface=${CLUSTER_INTERFACE}
 
 # set domain name
 #domain=hypriot.cluster

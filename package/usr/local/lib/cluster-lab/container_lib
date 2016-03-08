@@ -81,7 +81,7 @@ function check_consul(){
   evaluate_result $? "  No Cluster-Node is in status 'failed'"
 
   # Variables that use some helper functions
-  VLAN_NODE_IP="$(get_ip_of_interface "${VLAN_INTERFACE}")"
+  VLAN_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
   ESCAPED_VLAN_NODE_IP=$(escape_ip_for_regex "${VLAN_NODE_IP}")
 
   netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E "${ESCAPED_VLAN_NODE_IP}:7946"
@@ -110,7 +110,7 @@ function post_check_docker_container(){
 # docker container
 function run_docker_container(){
   echo -e "\n\e[34mConfigure Docker containers for consul and swarm\e[0m"
-  VLAN_NODE_IP="$(get_ip_of_interface "${VLAN_INTERFACE}")"
+  VLAN_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
 
   # configure consul start command
   local consul_docker="docker run -dit --restart always --name ${DOCKER_COMPOSE_PROJECT}_consul --net host"
