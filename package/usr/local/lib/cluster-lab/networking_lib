@@ -7,18 +7,12 @@ declare LEADER_IP
 function add_vlan_interface(){
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
     ip link add link "${INTERFACE}" name "${CLUSTER_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
-    return $?
-  else
-    return 0
   fi
 }
 
 function remove_vlan_interface(){
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
     ip link delete dev "${CLUSTER_INTERFACE}" type vlan > /dev/null 2>&1
-    return $?
-  else
-    return 0
   fi
 }
 
@@ -27,14 +21,7 @@ function add_ip_to_vlan_interface(){
   local ip="$1"
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
     ip addr add "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
-    if [[ $? == 0 ]]; then
-      ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
-      return $?
-    else
-      return 1
-    fi
-  else
-    return 0
+    ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
   fi
 }
 
@@ -42,9 +29,6 @@ function remove_ip_from_vlan_interface(){
   local ip="$1"
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
     ip addr delete "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
-    return $?
-  else
-    return 0
   fi
 }
 
