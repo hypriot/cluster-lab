@@ -189,12 +189,6 @@ function post_check_networking(){
   check_if_process_exists "avahi"
   evaluate_result $? "  Avahi process exists"
 
-  [[ -f "/etc/avahi/avahi-daemon.conf.cluster-lab-backup" ]]
-  evaluate_result $? "  /etc/avahi/avahi-daemon.conf backup file exists"
-
-  [[ $(avahi-browse --all --terminate | grep -c 'IPv6') -eq 0 ]]
-  evaluate_result $? "  Avahi is not using IPv6 addresses"
-
   [[ $(avahi-browse --all --terminate | grep -c "${CLUSTER_INTERFACE}") -gt 0 ]]
   evaluate_result $? "  Avahi is using ${CLUSTER_INTERFACE}"
 
