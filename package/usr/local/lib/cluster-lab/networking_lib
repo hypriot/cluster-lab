@@ -58,12 +58,15 @@ function remove_ip_from_vlan_interface(){
 function ensure_node_ip_is_set(){
   if [[ -z "${NODE_IP}" ]]; then
     ip link set dev "${VLAN_INTERFACE}" up > /dev/null 2>&1
+
+    if [[ "${ENABLE_DHCP}" == "true" ]]; then
+
 #    if [[ -f "/var/run/dhclient_${VLAN_INTERFACE}.pid" ]]; then
 #      kill -9 "$(cat /var/run/dhclient_"${VLAN_INTERFACE}".pid)"
 #    fi
 #    timeout 3 dhclient -x -pf /var/run/dhclient_"${VLAN_INTERFACE}".pid "${VLAN_INTERFACE}"
-     timeout 3 dhclient "${VLAN_INTERFACE}"
-
+      timeout 3 dhclient "${VLAN_INTERFACE}"
+    fi
 
     # try 3 times to get an ip address
     for i in {1..3}; do

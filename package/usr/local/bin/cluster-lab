@@ -35,9 +35,12 @@ function start(){
   # start additional services if cluster leader
   if [[ "$(is_node_cluster_leader)" == "0" ]]; then
     echo -e "\n\e[34mThis node is Leader\e[0m"
-    pre_check_clusterleader
-    configure_clusterleader
-    post_check_clusterleader
+    if [[ "${ENABLE_DHCP}" == "true" ]]; then
+      echo -e "\n\e[34mDHCP is enabled\e[0m"
+      pre_check_clusterleader
+      configure_clusterleader
+      post_check_clusterleader
+    fi
   else
     echo -e "\n\e[34mThis node is Follower\e[0m"
   fi
