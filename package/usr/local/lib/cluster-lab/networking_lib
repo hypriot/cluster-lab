@@ -22,23 +22,6 @@ function remove_vlan_interface(){
   fi
 }
 
-# setup avahi-daemon
-function configure_avahi(){
-  # create backup file
-  if [[ ! -f "/etc/avahi/avahi-daemon.conf.cluster-lab-backup" ]]; then
-    cp /etc/avahi/avahi-daemon.conf /etc/avahi/avahi-daemon.conf.cluster-lab-backup
-  fi
-  # change configuration
-  # disable avahi on wlan0 and docker0
-  sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=wlan0,docker0/'  /etc/avahi/avahi-daemon.conf
-  # enable avahi on ${INTERFACE} and ${CLUSTER_INTERFACE}
-  sed -i -e "s/#allow-interfaces=eth0/allow-interfaces=${INTERFACE},${CLUSTER_INTERFACE}/"  /etc/avahi/avahi-daemon.conf
-  # disable use of IPv6 addresses
-  sed -i -e 's/use-ipv6=yes/use-ipv6=no/' /etc/avahi/avahi-daemon.conf
-
-  systemctl reload avahi-daemon.service
-}
-
 # IP configuration
 function add_ip_to_vlan_interface(){
   local ip="$1"
@@ -153,8 +136,8 @@ function pre_check_networking(){
   echo -e "\nNetworking"
   ERRORS=0
 
-  ip link show | grep -q "${INTERFACE}"
-  evaluate_result $? "  ${INTERFACE} exists"
+  ip link show | grep -q "${CLUSTER_INTERFACE}"
+  evaluate_result $? "  ${CLUSTER_INTERFACE} exists"
 
   check_if_os_package_exists "vlan"
   evaluate_result $? "  vlan os package exists"
@@ -165,17 +148,8 @@ function pre_check_networking(){
   check_if_os_package_exists "avahi-utils"
   evaluate_result $? "  Avahi-utils os package exists"
 
-  check_if_process_exists "avahi"
+  check_if_process_exists "avahi-daemon"
   evaluate_result $? "  Avahi process exists"
-
-  [[ ! -f "/etc/avahi/avahi-daemon.conf.cluster-lab-backup" ]]
-  evaluate_result $? "  /etc/avahi/avahi-daemon.conf backup file is absent"
-
-  [[ $(avahi-browse --all --terminate | grep -c 'IPv6') -gt 0 ]]
-  evaluate_result $? "  Avahi is using IPv6 addresses"
-
-  [[ $(avahi-browse --all --terminate | grep -c "${CLUSTER_INTERFACE}") -eq 0 ]]
-  evaluate_result $? "  Avahi is not using ${CLUSTER_INTERFACE}"
 
   [[ ! -f "/etc/avahi/services/cluster-leader.service" ]]
   evaluate_result $? "  Avahi cluster-leader.service file is absent"
@@ -263,7 +237,6 @@ function configure_networking(){
       fi
     fi
   fi
-  configure_avahi
 }
 
 # reset basic networking
@@ -272,9 +245,5 @@ function reset_networking(){
 
   remove_vlan_interface
 
-  if [ -f "/etc/avahi/avahi-daemon.conf.cluster-lab-backup" ]; then
-    mv -f /etc/avahi/avahi-daemon.conf.cluster-lab-backup /etc/avahi/avahi-daemon.conf
-    systemctl reload avahi-daemon.service
-  fi
   rm -f /etc/avahi/services/cluster-leader.service
 }
