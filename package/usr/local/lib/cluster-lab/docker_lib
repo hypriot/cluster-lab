@@ -55,6 +55,12 @@ function configure_docker(){
     cp /etc/default/docker /etc/default/docker.cluster-lab-backup
   fi
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
+  if [[ $(echo "${CLUSTER_NODE_IP}" | wc -w) -gt 1 ]]; then
+    echo -e "Failed to configure Docker:\nGot more than one IP address on ${CLUSTER_INTERFACE}: ${CLUSTER_NODE_IP}.\nFor configuring Docker exactly one IP is needed.\nTrying to rollback Docker and networking configuration."
+    reset_docker
+    reset_networking
+    exit 1
+  fi
   if [[ $(is_node_cluster_leader) == 0 ]]; then
     LEADER_OR_FOLLOWER="leader"
   else
