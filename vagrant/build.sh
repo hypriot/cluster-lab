@@ -3,7 +3,7 @@ DESCRIPTION="HyprIoT Cluster Lab"
 DEPENDENCIES="avahi-utils, vlan, dnsmasq"
 BUILD_DIR=.
 
-VERSION="$(cat VERSION)"
+VERSION="$(cat ../VERSION)"
 PACKAGE_VERSION=${VERSION}-${1:-"1"}
 
 REPO_NAME="$(basename "$(git rev-parse --show-toplevel)")"
