@@ -161,9 +161,6 @@ function post_check_networking(){
   echo -e "\nNetworking"
   ERRORS=0
 
-  ip link show | grep -q "${INTERFACE}"
-  evaluate_result $? "  ${INTERFACE} exists"
-
   ip link show | grep -q "${CLUSTER_INTERFACE}"
   evaluate_result $? "  ${CLUSTER_INTERFACE} exists"
 
