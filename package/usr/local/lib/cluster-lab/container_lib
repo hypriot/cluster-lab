@@ -36,7 +36,7 @@ function docker_container(){
 
 function consul_members(){
   if [[ -z "$CONSUL_MEMBERS" ]]; then
-    CONSUL_MEMBERS=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul /consul members)
+    CONSUL_MEMBERS=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members)
   fi
   echo "$CONSUL_MEMBERS"
 }
