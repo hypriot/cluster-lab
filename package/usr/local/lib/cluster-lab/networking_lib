@@ -30,7 +30,7 @@ function configure_avahi(){
   fi
   # change configuration
   # disable avahi on wlan0 and docker0
-#  sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=eth1,wlan0,docker0/'  /etc/avahi/avahi-daemon.conf
+  sed -i -e 's/#deny-interfaces=eth1/deny-interfaces=wlan0,docker0/'  /etc/avahi/avahi-daemon.conf
   # enable avahi on ${INTERFACE} and ${VLAN_INTERFACE}
   sed -i -e "s/#allow-interfaces=eth0/allow-interfaces=${INTERFACE},${VLAN_INTERFACE}/"  /etc/avahi/avahi-daemon.conf
   # disable use of IPv6 addresses
