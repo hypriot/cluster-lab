@@ -44,9 +44,9 @@ usage:
 
   cluster-lab stop             Stop the Cluster Lab.
 
-  cluster-lab checkdeps        Check dependencies for the Cluster Lab.
+  cluster-lab dependencies     Check dependencies for the Cluster Lab.
 
-  cluster-lab checkhealth      Check health of the Cluster Lab.
+  cluster-lab health           Check health of the Cluster Lab.
 
 EOM
 }
