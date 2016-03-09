@@ -123,10 +123,10 @@ if [ $# -eq 1 ]; then
     "stop" )
       stop
       ;;
-    "checkdeps" )
+    "dependencies" )
       pre_checks
       ;;
-    "checkhealth" )
+    "health" )
       post_checks
       ;;
     * )
