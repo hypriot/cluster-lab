@@ -24,7 +24,7 @@ function exit_with_message_on_error(){
 
 function is_verbose(){
   [[ ("${VERBOSE}" == "true") || ("${CL_ARGUMENT}" == "health") || ("${CL_ARGUMENT}" == "dependencies") ]]
-  return $?
+  echo $?
 }
 
 function get_ip_of_interface(){
