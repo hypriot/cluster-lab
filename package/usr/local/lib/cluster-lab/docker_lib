@@ -4,7 +4,7 @@ declare DOCKER_INFO
 
 function docker_info(){
   if [[ -z "${DOCKER_INFO}" ]]; then
-    DOCKER_INFO=$(docker info)
+    DOCKER_INFO=$(docker info 2>/dev/null)
   fi
   echo "$DOCKER_INFO"
 }
