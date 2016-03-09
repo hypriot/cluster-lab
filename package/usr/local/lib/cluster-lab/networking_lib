@@ -50,8 +50,10 @@ function ensure_node_ip_is_set(){
 function ensure_leader_ip_is_set(){
   if [[ -z "${LEADER_IP}" ]]; then
 
-    if [[ -z $(get_ip_of_interface "${CLUSTER_INTERFACE}") ]]; then
+    if [[ -z "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" ]]; then
       add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
+      systemctl restart avahi-daemon.service
+      sleep 2
     fi
 
     avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable --ignore-local)
@@ -64,6 +66,8 @@ function ensure_leader_ip_is_set(){
 function is_node_cluster_leader(){
   if [[ -z $(get_ip_of_interface "${CLUSTER_INTERFACE}") ]]; then
     add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
+    systemctl restart avahi-daemon.service
+    sleep 2
   fi
 
   avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
