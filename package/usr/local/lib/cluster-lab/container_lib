@@ -50,7 +50,7 @@ function check_consul(){
   docker_images | grep -q 'consul'
   evaluate_result $? "  Consul Docker image exists"
 
-  docker_container | grep -q 'consul agent -serve'
+  docker_container | grep -q "${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul"
   evaluate_result $? "  Consul Docker container is running"
 
   listening_consul_ports=$(netstat -tlpen | grep consul)
