@@ -176,7 +176,7 @@ function post_check_networking(){
   ping -W 1 -c 2 "${leader_ip_from_avahi}" > /dev/null 2>&1
   evaluate_result $? "  Cluster leader is reachable"
 
-  number_of_ips=$(ip addr show dev "${CLUSTER_INTERFACE}" | grep -c "inet\s")
+  number_of_ips=$(ip addr show dev "${CLUSTER_INTERFACE}" 2>/dev/null | grep -c "inet\s")
   [[ "$number_of_ips" -eq 1 ]]
   evaluate_result $? "  ${CLUSTER_INTERFACE} has exactly one IP"
 

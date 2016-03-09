@@ -37,7 +37,7 @@ function docker_container(){
 
 function consul_nodes_from_kv(){
   if [[ -z "$CONSUL_NODES_FROM_KV" ]]; then
-    CONSUL_NODES_FROM_KV="$(curl --silent http://"${CLUSTER_NODE_IP}":8500/v1/catalog/nodes)"
+    CONSUL_NODES_FROM_KV="$(curl --silent http://"${CLUSTER_NODE_IP}":8500/v1/catalog/nodes  2>/dev/null)"
   fi
   echo "$CONSUL_NODES_FROM_KV"
 }

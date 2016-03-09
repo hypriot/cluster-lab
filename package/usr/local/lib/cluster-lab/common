@@ -30,7 +30,7 @@ function is_verbose(){
 function get_ip_of_interface(){
   local interface="${1}"
   local all_ip_addresses=$(hostname -I)
-  local interface_ip=$(ip a s "$interface")
+  local interface_ip=$(ip a s "$interface" 2>/dev/null)
   for ip_address in $all_ip_addresses; do
     if [[ "$interface_ip" == *"$ip_address"* ]]; then
       echo "$ip_address"
