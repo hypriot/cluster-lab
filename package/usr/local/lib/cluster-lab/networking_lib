@@ -17,13 +17,13 @@ function remove_vlan_interface(){
 }
 
 # IP configuration
-function add_ip_to_vlan_interface(){
+function add_ip_to_cluster_interface(){
   local ip="$1"
   ip addr add "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
   ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
 }
 
-function remove_ip_from_vlan_interface(){
+function remove_ip_from_cluster_interface(){
   local ip="$1"
     ip addr delete "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
 }
@@ -51,25 +51,25 @@ function ensure_leader_ip_is_set(){
   if [[ -z "${LEADER_IP}" ]]; then
 
     if [[ -z $(get_ip_of_interface "${CLUSTER_INTERFACE}") ]]; then
-      add_ip_to_vlan_interface "${VLAN_TEST_IP}"
+      add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
     fi
 
     avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable --ignore-local)
     LEADER_IP=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
 
-    remove_ip_from_vlan_interface "${VLAN_TEST_IP}"
+    remove_ip_from_cluster_interface "${CLUSTER_TEST_IP}"
   fi
 }
 
 function is_node_cluster_leader(){
   if [[ -z $(get_ip_of_interface "${CLUSTER_INTERFACE}") ]]; then
-    add_ip_to_vlan_interface "${VLAN_TEST_IP}"
+    add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
   fi
 
   avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
   local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
 
-  remove_ip_from_vlan_interface "${VLAN_TEST_IP}"
+  remove_ip_from_cluster_interface "${CLUSTER_TEST_IP}"
 
   ensure_node_ip_is_set
   [[ "${NODE_IP}" == "${leader_ip}" ]]
@@ -201,7 +201,7 @@ function configure_networking(){
     if [[ "${ENABLE_DHCP}" == "true" ]]; then
       # ensure that there is no link local ip on the CLUSTER_INTERFACE
       ip addr flush dev "${CLUSTER_INTERFACE}"
-      add_ip_to_vlan_interface "${VLAN_LEADER_IP}"
+      add_ip_to_cluster_interface "${CLUSTER_LEADER_IP}"
     fi
     add_avahi_cluster_leader_service_file
   else
@@ -232,7 +232,7 @@ function reset_networking(){
     ip addr flush dev "${CLUSTER_INTERFACE}"
   fi
 
-  remove_ip_to_vlan_interface "${VLAN_LEADER_IP}"
+  remove_ip_to_vlan_interface "${CLUSTER_LEADER_IP}"
   remove_vlan_interface
 
   rm -f /etc/avahi/services/cluster-leader.service
