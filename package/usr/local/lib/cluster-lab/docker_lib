@@ -10,7 +10,9 @@ function docker_info(){
 }
 
 function pre_check_docker(){
-  echo -e "\nDocker"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDocker"
+  fi
   ERRORS=0
 
   # instead of checking different package name variants
@@ -26,7 +28,9 @@ function pre_check_docker(){
 }
 
 function post_check_docker(){
-  echo -e "\nDocker"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDocker"
+  fi
 
   # Variables that use some helper functions
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"

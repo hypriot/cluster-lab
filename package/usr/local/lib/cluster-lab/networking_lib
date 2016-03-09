@@ -107,7 +107,9 @@ EOM
 
 # various checks of network connectivity
 function check_internet_connection(){
-  echo -e "\nInternet Connection"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nInternet Connection"
+  fi
   ERRORS=0
 
   ip link show | grep -q "${INTERFACE}"
@@ -126,7 +128,9 @@ function check_internet_connection(){
 }
 
 function pre_check_networking(){
-  echo -e "\nNetworking"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nNetworking"
+  fi
   ERRORS=0
 
   ip link show | grep -q "${INTERFACE}"
@@ -151,7 +155,9 @@ function pre_check_networking(){
 }
 
 function post_check_networking(){
-  echo -e "\nNetworking"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nNetworking"
+  fi
   ERRORS=0
 
   ip link show | grep -q "${CLUSTER_INTERFACE}"

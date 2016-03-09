@@ -2,7 +2,9 @@
 
 # checks for dnsmasq
 function pre_check_clusterleader(){
-  echo -e "\nDNSmasq"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDNSmasq"
+  fi
   ERRORS=0
 
   check_if_os_package_exists "dnsmasq"
@@ -18,7 +20,9 @@ function pre_check_clusterleader(){
 }
 
 function post_check_clusterleader(){
-  echo -e "\nDNSmasq"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDNSmasq"
+  fi
   ERRORS=0
 
   check_if_process_exists "dnsmasq"
