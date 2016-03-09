@@ -6,6 +6,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+ExecStartPre=/usr/local/bin/cluster-lab stop
 ExecStart=/usr/local/bin/cluster-lab start
 ExecStop=/usr/local/bin/cluster-lab stop
 
