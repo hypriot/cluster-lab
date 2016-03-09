@@ -6,6 +6,31 @@
 # include cluster-lab config
 . /etc/cluster-lab/cluster.conf
 
+# choose the correct Docker image for the current architecture
+ARCHITECTURE=$(uname -m)
+case "$ARCHITECTURE" in
+    arm*)
+        IMAGE_SWARM=hypriot/rpi-swarm:1.1.0
+        IMAGE_CONSUL=hypriot/rpi-consul:0.6.3
+        ;;
+    amd64|x86_64)
+        IMAGE_SWARM=swarm:1.1.0
+        IMAGE_CONSUL=gliderlabs/consul:0.6
+        ;;
+    * )
+        echo "Your architecture is not supported."
+        ;;
+esac
+
+# If VLAN is enabled the Cluster Lab
+# network is based on VLAN_INTERFACE
+# or else it is based on INTERFACE
+if [[ "${ENABLE_VLAN}" == "true" ]]; then
+  CLUSTER_INTERFACE="${INTERFACE}.${VLAN_ID}"
+else
+  CLUSTER_INTERFACE="${INTERFACE}"
+fi
+
 # include cluster-lab functions
 for sourcefile in /usr/local/lib/cluster-lab/*_lib; do
   . $sourcefile
