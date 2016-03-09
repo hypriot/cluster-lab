@@ -77,6 +77,7 @@ systemctl restart dnsmasq.service
 
 function reset_clusterleader(){
   echo -e "\n\e[34mReset DNSmasq\e[0m"
+  rm -f /var/lib/misc/dnsmasq.leases
   if [ -f "/etc/dnsmasq.conf.cluster-lab-backup" ];then
     mv -f /etc/dnsmasq.conf.cluster-lab-backup /etc/dnsmasq.conf
     systemctl restart dnsmasq.service
