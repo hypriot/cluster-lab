@@ -39,15 +39,16 @@ done
 usage () {
 cat << EOM
 usage:
-        $0 start            Start the  Cluster Lab.
 
-        $0 stop             Stop the  Cluster Lab.
+  cluster-lab start            Start the Cluster Lab.
 
-        $0 checkdeps        Check dependencies of the Cluster Lab.
+  cluster-lab stop             Stop the Cluster Lab.
 
-        $0 checkhealth      Check health of the Cluster Lab.
+  cluster-lab checkdeps        Check dependencies for the Cluster Lab.
 
-        $0 members          Get consul members.
+  cluster-lab checkhealth      Check health of the Cluster Lab.
+
+  cluster-lab members          List Consul member nodes.
 
 EOM
 }
