@@ -87,6 +87,12 @@ function check_swarm(){
     echo -e "\nSwarm"
   fi
 
+  docker_container | grep -q "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm"
+  evaluate_result $? "  Swarm-Join Docker container is running"
+
+  docker_container | grep -q "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage"
+  evaluate_result $? "  Swarm-Manage Docker container is running"
+
   number_of_alive_consul_nodes=$(docker exec ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members | grep -c 'alive')
   number_of_swarm_nodes=$(docker -H "tcp://${CLUSTER_NODE_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
   [[ $number_of_swarm_nodes -eq $number_of_alive_consul_nodes ]]
