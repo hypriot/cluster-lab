@@ -116,6 +116,7 @@ function post_checks(){
 }
 
 if [ $# -eq 1 ]; then
+  CALL="${1}"
   case "$1" in
     "start" )
       start

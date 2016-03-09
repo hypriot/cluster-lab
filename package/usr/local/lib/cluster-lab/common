@@ -3,11 +3,13 @@
 function evaluate_result(){
   local returnvalue="${1}"
   local message="${2}"
-  if [ "$returnvalue" -eq 0 ]; then
-    echo -e "\e[32m  [PASS] ${message}\e[0m"
-  else
-    echo -e "\e[31m  [FAIL] ${message}\e[0m"
-    ERROR=1
+  if [[ ("${VERBOSE}" == "true") || ("${CALL}" == "health") || ("${CALL}" == "dependencies") ]]; then
+    if [ "$returnvalue" -eq 0 ]; then
+      echo -e "\e[32m  [PASS] ${message}\e[0m"
+    else
+      echo -e "\e[31m  [FAIL] ${message}\e[0m"
+      ERROR=1
+    fi
   fi
 }
 
