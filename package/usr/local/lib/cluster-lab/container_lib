@@ -5,7 +5,9 @@
 CLUSTER_LAB_CONTAINER_NAMESPACE="cluster_lab"
 
 function check_docker_images(){
-  echo -e "\nDocker Images"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDocker Images"
+  fi
 
   # from docker version 1.10.0 we can simplify by
   # docker images --format "{{.Repository}}:{{.Tag}}" | cut -d ':' -f1
@@ -33,7 +35,6 @@ function docker_container(){
   echo "$DOCKER_CONTAINER"
 }
 
-
 function consul_nodes_from_kv(){
   if [[ -z "$CONSUL_NODES_FROM_KV" ]]; then
     CONSUL_NODES_FROM_KV="$(curl --silent http://"${CLUSTER_NODE_IP}":8500/v1/catalog/nodes)"
@@ -42,7 +43,9 @@ function consul_nodes_from_kv(){
 }
 
 function check_consul(){
-  echo -e "\nConsul"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nConsul"
+  fi
 
   docker_images | grep -q 'consul'
   evaluate_result $? "  Consul Docker image exists"
@@ -80,7 +83,9 @@ function check_consul(){
 }
 
 function check_swarm(){
-  echo -e "\nSwarm"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nSwarm"
+  fi
 
   number_of_alive_consul_nodes=$(docker exec -it ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members | grep -c 'alive')
   number_of_swarm_nodes=$(docker -H "tcp://${CLUSTER_NODE_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
@@ -132,7 +137,6 @@ function run_docker_container(){
 
   # start Swarm-Manage container
   eval "docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${CLUSTER_NODE_IP}:2378 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
-
 }
 
 function remove_docker_container(){
