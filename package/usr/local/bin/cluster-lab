@@ -109,7 +109,7 @@ function stop(){
   check_internet_connection
 }
 
-function pre_checks(){
+function dependencies(){
   check_internet_connection
   pre_check_networking
   pre_check_clusterleader
@@ -118,7 +118,7 @@ function pre_checks(){
   pre_check_docker_container
 }
 
-function post_checks(){
+function health(){
   check_internet_connection
   post_check_networking
   if [[ "$(is_node_cluster_leader)" == "0" ]]; then
@@ -140,10 +140,10 @@ if [ $# -eq 1 ]; then
       stop
       ;;
     "dependencies" )
-      pre_checks
+      dependencies
       ;;
     "health" )
-      post_checks
+      health
       ;;
     * )
       usage
