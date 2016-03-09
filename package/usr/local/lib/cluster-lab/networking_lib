@@ -64,7 +64,7 @@ function ensure_leader_ip_is_set(){
 }
 
 function is_node_cluster_leader(){
-  if [[ -z $(get_ip_of_interface "${CLUSTER_INTERFACE}") ]]; then
+  if [[ -z "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" ]]; then
     add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
     systemctl restart avahi-daemon.service
     sleep 2
