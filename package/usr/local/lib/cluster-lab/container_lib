@@ -136,7 +136,7 @@ function run_docker_container(){
 function remove_docker_container(){
   echo -e "\n\e[34mRemove Docker container\e[0m"
 
-  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage"   > /dev/null 2>&1
-  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm"   > /dev/null 2>&1
-  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul"   > /dev/null 2>&1
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage" > /dev/null 2>&1
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm" > /dev/null 2>&1
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul" > /dev/null 2>&1
 }
