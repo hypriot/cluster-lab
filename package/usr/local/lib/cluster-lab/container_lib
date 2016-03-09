@@ -72,7 +72,7 @@ function check_consul(){
     evaluate_result $? "  Cluster-Node is pingable with IP ${ip}"
   done < <( consul_nodes_from_kv | grep -oP "\"Address\":\"${regex}\"" )
 
-  number_of_failed_consul_nodes=$(docker exec ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members | grep -c 'failed')
+  number_of_failed_consul_nodes=$(docker exec ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members  2>/dev/null | grep -c 'failed')
   [[ $number_of_failed_consul_nodes -eq 0 ]]
   evaluate_result $? "  No Cluster-Node is in status 'failed'"
 
@@ -93,7 +93,7 @@ function check_swarm(){
   docker_container | grep -q "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage"
   evaluate_result $? "  Swarm-Manage Docker container is running"
 
-  number_of_alive_consul_nodes=$(docker exec ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members | grep -c 'alive')
+  number_of_alive_consul_nodes=$(docker exec ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul members  2>/dev/null | grep -c 'alive')
   number_of_swarm_nodes=$(docker -H "tcp://${CLUSTER_NODE_IP}:2378" info | grep 'Nodes: ' | cut -d ' ' -f2)
   [[ $number_of_swarm_nodes -eq $number_of_alive_consul_nodes ]]
   evaluate_result $? "  Number of Swarm and Consul nodes is equal which means our cluster is healthy"
