@@ -39,18 +39,18 @@ function get_ip_of_interface(){
 }
 
 function escape_ip_for_regex(){
-  local ip_to_escape="$1"
+  local ip_to_escape="${1}"
   echo "${ip_to_escape//\./\\\.}"
 }
 
 function check_if_process_exists() {
-  local process="$1"
+  local process="${1}"
   pgrep "$process" > /dev/null 2>&1
   return $?
 }
 
 function check_if_os_package_exists(){
-  package="$1"
+  package="${1}"
   dpkg -l | grep -q -E "^ii\s*${package}"
   return $?
 }
