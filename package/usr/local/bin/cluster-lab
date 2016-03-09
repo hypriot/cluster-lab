@@ -121,7 +121,9 @@ function pre_checks(){
 function post_checks(){
   check_internet_connection
   post_check_networking
-  post_check_clusterleader
+  if [[ "$(is_node_cluster_leader)" == "0" ]]; then
+    post_check_clusterleader
+  fi
   post_check_docker
   post_check_docker_container
 }
