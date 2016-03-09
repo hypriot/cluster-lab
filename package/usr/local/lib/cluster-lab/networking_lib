@@ -233,7 +233,7 @@ function reset_networking(){
     ip addr flush dev "${CLUSTER_INTERFACE}"
   fi
 
-  remove_ip_to_vlan_interface "${CLUSTER_LEADER_IP}"
+  remove_ip_from_cluster_interface "${CLUSTER_LEADER_IP}"
   remove_vlan_interface
 
   rm -f /etc/avahi/services/cluster-leader.service
