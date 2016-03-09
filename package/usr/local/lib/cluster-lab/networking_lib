@@ -129,13 +129,8 @@ function pre_check_networking(){
   echo -e "\nNetworking"
   ERRORS=0
 
-  if [[ "${ENABLE_VLAN}" == "true" ]]; then
-    ip link show | grep -q "${CLUSTER_INTERFACE}"
-    evaluate_result $? "  ${CLUSTER_INTERFACE} exists"
-  else
-    ip link show | grep -q "${INTERFACE}"
-    evaluate_result $? "  ${INTERFACE} exists"
-  fi
+  ip link show | grep -q "${INTERFACE}"
+  evaluate_result $? "  ${INTERFACE} exists"
 
   check_if_os_package_exists "vlan"
   evaluate_result $? "  vlan os package exists"
