@@ -32,7 +32,9 @@ function post_check_clusterleader(){
 
 # DHCP dnsmasq
 function configure_clusterleader(){
-  echo -e "\n\e[34mConfigure DNSmasq\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mConfigure DNSmasq\e[0m"
+  fi
 
   if [[ ! -f "/etc/dnsmasq.conf.cluster-lab-backup" ]]; then
     cp /etc/dnsmasq.conf /etc/dnsmasq.conf.cluster-lab-backup
@@ -76,7 +78,9 @@ systemctl restart dnsmasq.service
 }
 
 function reset_clusterleader(){
-  echo -e "\n\e[34mReset DNSmasq\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mReset DNSmasq\e[0m"
+  fi
   rm -f /var/lib/misc/dnsmasq.leases
   if [ -f "/etc/dnsmasq.conf.cluster-lab-backup" ];then
     mv -f /etc/dnsmasq.conf.cluster-lab-backup /etc/dnsmasq.conf

@@ -101,7 +101,9 @@ function post_check_docker_container(){
 
 # docker container
 function run_docker_container(){
-  echo -e "\n\e[34mConfigure Docker containers for Consul and Swarm\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mConfigure Docker containers for Consul and Swarm\e[0m"
+  fi
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
 
   # configure Consul start command
@@ -134,7 +136,9 @@ function run_docker_container(){
 }
 
 function remove_docker_container(){
-  echo -e "\n\e[34mRemove Docker container\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mRemove Docker container\e[0m"
+  fi
 
   docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage" > /dev/null 2>&1
   docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm" > /dev/null 2>&1

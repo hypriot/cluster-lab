@@ -47,7 +47,9 @@ function post_check_docker(){
 
 # Docker-Engine
 function configure_docker(){
-  echo -e "\n\e[34mConfigure Docker\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mConfigure Docker\e[0m"
+  fi
 
   # create backup of /etc/default/docker config
   if [[ (! -f "/etc/default/docker.cluster-lab-backup") ]]; then
@@ -74,7 +76,9 @@ function configure_docker(){
 }
 
 function reset_docker(){
-  echo -e "\n\e[34mReset Docker\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mReset Docker\e[0m"
+  fi
 
   if [[ -f "/etc/default/docker.cluster-lab-backup" ]]; then
     mv -f /etc/default/docker.cluster-lab-backup /etc/default/docker

@@ -196,7 +196,9 @@ function post_check_networking(){
 
 # setup basic networking
 function configure_networking(){
-  echo -e "\n\e[34mConfigure basic networking\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mConfigure basic networking\e[0m"
+  fi
 
   add_vlan_interface
   ensure_leader_ip_is_set
@@ -231,7 +233,9 @@ function configure_networking(){
 
 # reset basic networking
 function reset_networking(){
-  echo -e "\n\e[34mReset basic networking\e[0m"
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mReset basic networking\e[0m"
+  fi
 
   if [[ "${ENABLE_DHCP}" == "true" ]]; then
     ip addr flush dev "${CLUSTER_INTERFACE}"

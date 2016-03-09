@@ -3,7 +3,7 @@
 function evaluate_result(){
   local returnvalue="${1}"
   local message="${2}"
-  if [[ ("${VERBOSE}" == "true") || ("${CALL}" == "health") || ("${CALL}" == "dependencies") ]]; then
+  if [[ $(is_verbose) -eq 0 ]]; then
     if [ "$returnvalue" -eq 0 ]; then
       echo -e "\e[32m  [PASS] ${message}\e[0m"
     else
@@ -20,6 +20,11 @@ function exit_with_message_on_error(){
     echo "${message}"
     exit 1
   fi
+}
+
+function is_verbose(){
+  [[ ("${VERBOSE}" == "true") || ("${CL_ARGUMENT}" == "health") || ("${CL_ARGUMENT}" == "dependencies") ]]
+  return $?
 }
 
 function get_ip_of_interface(){
