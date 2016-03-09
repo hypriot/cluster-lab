@@ -52,6 +52,11 @@ Vagrant.configure(2) do |config|
     cd /cluster-lab-src/vagrant && ./build.sh
 
     # install Cluster Lab debian package
+    # stop cluster-lab if it exists
+    command -v cluster-lab >/dev/null 2>&1
+    if [[ "$?" -eq 0 ]]; then
+      cluster-lab stop
+    fi
     dpkg --force-confnew -i ./hypriot-cluster-lab-src_0.1.1-1.deb
     cluster-lab start
   SHELL
