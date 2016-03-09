@@ -80,13 +80,10 @@ function check_consul(){
   [[ $number_of_failed_consul_nodes -eq 0 ]]
   evaluate_result $? "  No Cluster-Node is in status 'failed'"
 
-  # Variables that use some helper functions
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
   ESCAPED_CLUSTER_NODE_IP=$(escape_ip_for_regex "${CLUSTER_NODE_IP}")
-
   netstat --numeric --listening --programs --tcp --inet | grep 'docker' | grep -q -E "${ESCAPED_CLUSTER_NODE_IP}:7946"
-  evaluate_result $? "  Consul is able to talk to docker engine on port 7946 (Serf)"
-
+  evaluate_result $? "  Consul is able to talk to Docker-Engine on port 7946 (Serf)"
 }
 
 function check_swarm(){
