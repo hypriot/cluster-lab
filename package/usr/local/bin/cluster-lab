@@ -48,8 +48,6 @@ usage:
 
   cluster-lab checkhealth      Check health of the Cluster Lab.
 
-  cluster-lab members          List Consul member nodes.
-
 EOM
 }
 
@@ -130,9 +128,6 @@ if [ $# -eq 1 ]; then
       ;;
     "checkhealth" )
       post_checks
-      ;;
-    "members" )
-      consul_members
       ;;
     * )
       ;;
