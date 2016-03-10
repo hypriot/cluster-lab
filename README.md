@@ -10,6 +10,8 @@ The Cluster Lab can be used to
 
 The Cluster Lab is made with love(tm), lots of glue code and technologies such as Docker-Engine, Docker-Compose, Docker-Swarm and Consul.
 
+__Note: Beware that the Cluster Lab is still beta quality.__
+
 ## Key features
 
 __Cluster Lab is self-configuring__  
@@ -22,12 +24,9 @@ On ARM a fully working cluster can be set up in minutes.
 __Cluster Lab is multi-arch__  
 There are Cluster Lab packages for ARM and X86_64.
 
-__Note: Beware that the Cluster Lab is still beta quality.__
-
-
 ## Getting started
-A node in a Cluster Lab can either be a __leader_ or a __follower_.  
-The role of a node is determined by the start order of the cluster nodes. The first node autmatically becomes the __leader_node.
+A node in a Cluster Lab can either be a __leader_ or a __follower__.__
+The role of a node is determined by the start order of the cluster nodes. The first node autmatically becomes the __leader__ node.
 All nodes that start after the __leader__ automatically become __follower__ nodes.
 
 ### Vagrant
