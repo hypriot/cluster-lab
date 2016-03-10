@@ -10,7 +10,6 @@ number_of_nodes = ENV['NUMBER_OF_NODES'] || 3
 # the number of total nodes minus the leader is the number of followers
 number_of_followers = number_of_nodes.to_i - 1
 
-puts number_of_nodes
 raise 'The Cluster Lab needs at least 3 nodes to operate' if (number_of_nodes < 3)
 
 Vagrant.configure(2) do |config|
