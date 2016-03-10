@@ -58,7 +58,7 @@ cd cluster-lab/vagrant
 To finally start up the Cluster Lab execute the following final command:
 
 ```
-vagrant up --no-color
+vagrant up --provider virtualbox
 ```
 
 This should by default create a cluster wth 3 nodes called __leader__, __follower1__ and __follower2__.
