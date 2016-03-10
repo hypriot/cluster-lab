@@ -268,7 +268,7 @@ $ cluster-lab stop
 
 This should reset the node into the original state it had before the start of the Cluster Lab.
 
-Afterwards we can check if everything is in order to start the Cluster Lab with
+Afterwards we can check if everything is ready for starting the Cluster Lab:
 
 ```
 $ cluster-lab dependencies
