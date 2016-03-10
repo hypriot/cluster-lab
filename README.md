@@ -1,194 +1,287 @@
 # Hypriot Cluster Lab
 
-*This is a proof of concept and an alpha version*
+The Hypriot Cluster Lab allows to create a Docker Swarm Cluster very easily.
 
-Feel free to make PRs and create issues.
-
-
-The Hypriot Cluster Lab is a piece of software that can be installed on nodes within a network, which then will be automatically combined to a cluster of nodes.
-This is an out-of-the-box solution that creates a fully auto-configured cluster within only a few minutes.
-
-This cluster opens up numerous possibilities:
-  - Run distributed applications in a *real* cluster
-  - Play with Docker, Swarm and its tool set
-  - Learn about networking, load balancing, high availability
+The Cluster Lab can be used to
+  - run distributed applications in a *real* or *virtual* cluster
+  - work, learn and experiment with Docker and Docker Swarm Clustering
+  - learn about networking, load balancing and high availability
   - ... and much more!
 
-Technologies used include the Docker stack (Docker-Compose, Swarm), Consul, and standardized features of computer networks, such as VLANs.
+The Cluster Lab is made with love(tm), lots of glue code and technologies such as Docker-Engine, Docker-Compose, Docker-Swarm and Consul.
 
-![Image of Kubernetes and Raspberry Pi](technologies_logos.png)
+## Key features
 
-**You are very welcome to extend this lab, whether with a technical contribution or some conceptional ideas!**  <br /> This software basically consists of a large and a small bash script, that's it. We tried to make it as easy as possible to understand what's happening. 
+__Cluster Lab is self-configuring__  
+Cluster-Lab nodes are configured to form a cluster fully automatically.
+No configuration by the user is necessary.
 
-Get in touch with us and the community in our [Gitter chat](https://gitter.im/hypriot/talk), on our [Blog](http://blog.hypriot.com/armed_docker_swarm_cluster_for_testing), on [Twitter](https://twitter.com/HypriotTweets), send a PR, ... Just choose the way you prefer. We look forward to any suggestion!
+__Cluster Lab is fast to set up__  
+On ARM a fully working cluster can be set up in minutes.
 
-If you wanna know more about why we created this project, please see our [corresponding blog post](http://blog.hypriot.com/post/introducing-hypriot-cluster-lab-docker-clustering-as-easy-as-it-gets/)!
+__Cluster Lab is multi-arch__  
+There are Cluster Lab packages for ARM and X86_64.
 
-## How to run
-
-### Requirements
-
-- At least two Raspberry Pi's 1 or 2 (all models with a network interface will work, i.e. **B** or **B+**), and for each
-  - Power supply
-  - MicroSD card
-  - Network cable
-- **A network switch that is somehow connected to the Internet, such that all Raspberry Pi's have Internet access as well.** This network switch must not filter IEEE 802.1Q VLAN flags out of network packets. NB! This features is often also provided by low costs switches. You can test if your Router supports VLAN by building a cluster of two nodes. On the node you started second, execute `ping 192.168.200.1`. If this ping fails, but you can login into the first node via SSH, your switch probably filters VLAN flags and is therefore not suitable for this cluster lab.
+__Note: Beware that the Cluster Lab is still beta quality.__
 
 
-### Option 1: Flash SD card image and boot each nodes from it
-  - [Download SD card image here](http://blog.hypriot.com/downloads/#hypriot-cluster-lab:2a4af035d9e12b64c084b5e7cfb2c420)
+## Getting started
+A node in a Cluster Lab can either be a __leader_ or a __follower_.  
+The role of a node is determined by the start order of the cluster nodes. The first node autmatically becomes the __leader_node.
+All nodes that start after the __leader__ automatically become __follower__ nodes.
+
+### Vagrant
+To get started with the Cluster Lab based on [Vagrant](https://www.vagrantup.com/) is really easy.
+Vagrant allows to run the Cluster Lab based on virtual machines.
+
+First ensure that you a have recent version of Vagrant installed and test if it is working:
+
+```
+$ vagrant version
+Installed Version: 1.8.1
+Latest Version: 1.8.1
+
+You're running an up-to-date version of Vagrant!
+```
+
+Then clone this repository with:
+
+```
+git clone https://github.com/hypriot/cluster-lab.git
+```
+
+Afterwards change into the `vagrant` subdirectory:
+
+```
+cd cluster-lab/vagrant
+```
+
+To finally start up the Cluster Lab execute the following final command:
+
+```
+vagrant up --no-color
+```
+
+This should by default create a cluster wth 3 nodes called __leader__, __follower1__ and __follower2__.
+On each node all the necessary dependencies are installed, configured and started.
+This can take quite some time. Please be patient.
+
+To log into one of the nodes - for instance - the leader node run the following Vagrant command:
+
+```
+vagrant ssh leader
+```
+
+Replace the last argument with the name of the node you wanna log into.
+
+Then you can check that your Docker Swarm Cluster is working:
+
+```
+$ sudo su
+$ docker -H tcp://192.168.200.1:2378 info
+Containers: 9
+ Running: 9
+ Paused: 0
+ Stopped: 0
+Images: 6
+Role: primary
+Strategy: spread
+Filters: health, port, dependency, affinity, constraint
+Nodes: 3
+ follower1: 192.168.200.30:2375
+  └ Status: Healthy
+  └ Containers: 3
+  └ Reserved CPUs: 0 / 1
+  └ Reserved Memory: 0 B / 1.018 GiB
+  └ Labels: executiondriver=native-0.2, hypriot.arch=x86_64, hypriot.hierarchy=follower, kernelversion=4.2.0-30-generic, operatingsystem=Ubuntu 15.10, storagedriver=overlay
+  └ Error: (none)
+  └ UpdatedAt: 2016-03-09T22:56:05Z
+ follower2: 192.168.200.45:2375
+  └ Status: Healthy
+  └ Containers: 3
+  └ Reserved CPUs: 0 / 1
+  └ Reserved Memory: 0 B / 1.018 GiB
+  └ Labels: executiondriver=native-0.2, hypriot.arch=x86_64, hypriot.hierarchy=follower, kernelversion=4.2.0-30-generic, operatingsystem=Ubuntu 15.10, storagedriver=overlay
+  └ Error: (none)
+  └ UpdatedAt: 2016-03-09T22:56:18Z
+ leader: 192.168.200.1:2375
+  └ Status: Healthy
+  └ Containers: 3
+  └ Reserved CPUs: 0 / 1
+  └ Reserved Memory: 0 B / 1.018 GiB
+  └ Labels: executiondriver=native-0.2, hypriot.arch=x86_64, hypriot.hierarchy=leader, kernelversion=4.2.0-30-generic, operatingsystem=Ubuntu 15.10, storagedriver=overlay
+  └ Error: (none)
+  └ UpdatedAt: 2016-03-09T22:56:24Z
+Plugins:
+ Volume:
+ Network:
+Kernel Version: 4.2.0-30-generic
+Operating System: linux
+Architecture: amd64
+CPUs: 3
+Total Memory: 3.054 GiB
+Name: 0a2ac29fe31b
+```
+
+As you can see we now have working Swarm Cluster with 3 nodes.
+
+
+### Raspberry Pi / ARM
+To get started with the Cluster Lab on a Raspberry Pi you will need the following:
+-  At least two Raspberry Pi's 1 or 2 and for each a __power supply_, a __MicroSD card__ and a __network cable__.
+-  A network switch that is connected to the Internet
+
+Note that the network switch must not filter IEEE 802.1Q VLAN flags out of network packets.
+
+#### Option 1: Flash SD card image and boot each nodes from it
+  - [Download our SD card image here](http://blog.hypriot.com/downloads/#hypriot-cluster-lab:2a4af035d9e12b64c084b5e7cfb2c420)
   - Flash the image on one SD card for each Raspberry Pi ([this script makes flashing easy for you](https://github.com/hypriot/flash))
-  - Plug the SD cards in each node and power **only one** node on. This node will be the Master of the cluster.
-  - Get the IP address of this node and open your browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to create it.
-  - Power on all other nodes. After about 2 minutes, you should see all of them being listed in the Consul web interface.
+  - Plug the SD cards in each node and power **only one** node on. This node will be the __leader__ of the cluster
+  - Get the IP address of this node and open your browser at **http://{IP of the leader node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to boot up.
+  - Power on all other nodes. After about 2 minutes you should see all of them being listed in the Consul web interface.
 
-### Option 2: Install the Cluster Lab as Debian Package
-  - Boot one node on the [latest HypriotOS](http://blog.hypriot.com/downloads/) (you need "Version 0.5 Will" or above. Other OSes have just not been tested yet. Please ping us if you wanna help testing this!)
+#### Option 2: Install the Cluster Lab as Debian Package
+  - Boot one node on the [latest HypriotOS](http://blog.hypriot.com/downloads/) (you need "Version 0.5 Will" or above. Other OSes have just not been tested yet.
   - Get the IP of this node and connect to it via SSH (See our [getting-started guide](http://blog.hypriot.com/getting-started-with-docker-on-your-arm-device/) with HypriotOS if you need help here!
 
    `ssh pi@<IP of the node>`
 
-  - Install the cluster lab software by executing
+  - Install the Cluster Lab package by executing
 
-   `sudo apt-get update && sudo apt-get install hypriot-cluster-lab && sudo systemctl start cluster-start`
+   `sudo apt-get update && sudo apt-get install hypriot-cluster-lab && sudo systemctl start cluster-lab`
 
-  - On any device in the same LAN network, open a browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to  create it.
-  - Install the cluster lab software on all other nodes with the command given above. About 2 minutes after each install, you should see the nodes being listed in the Consul web interface.
-
-
-## Test it and play with it
-  - We prepared some [use cases about loadbalancing or playing with distributed databases](https://github.com/hypriot/rpi-cluster-demo) that you can go through step by step. 
-  - You can use **Docker Swarm** by only providing one additional parameter in your Docker commands. For instance, when starting a container, Docker Swarm will distribute it on the cluster nodes according to a specific strategy (see details about strategies [here](https://docs.docker.com/swarm/scheduler/strategy/). We use the default strategy, which is `spread`). <br />
-  Start with listing all containers in the cluster by logging in via SSH to the cluster leader and execute
-
-    `docker -H tcp://192.168.200.1:2378 info`
-    
-  on any node of the cluster.    
-
-  - List all consul members:
-
-    `docker run -ti --rm hypriot/rpi-consul members -rpc-addr=192.168.200.1:8400`
-
-  Note: Consul listens on several different ports. Please see section *Ports used* in the [offical docs](https://www.consul.io/docs/agent/options.html) for detailed info why is that.
-  - Check if `eth0` is member of the virtual network
-    
-    `ip -d addr show`
-
-    Interface `eth0` should have the tag `200` listed.
-  - Start the [Dockerui](https://github.com/crosbymichael/dockerui) to see all containers on a neat website:
-
-    `docker run -d -p 9000:9000 --name dockerui hypriot/rpi-dockerui -e http://192.168.200.1:2378`
-  
-  - Start a container on a specific node with `--env="constraint:node==<hostname of RPi>"`
-  
-    `docker run -itd --env="constraint:node==<hostname of RPi>" hypriot/rpi-nano-httpd`
-
-## Use Cases
-
-### Use Case 1: Ping a web server within a virtual network using `libnetwork` introduced in Docker 1.9.0
-
-  - Create new virtual Network
-
-    `docker network create -d overlay my-net`
-  
-  - Create new web server on specific node. Here, the hostname has been set to **node2**. Execute `hostname` to see your hostname. Of course, you an also use IP addresses accordingly.
-
-    `docker run -itd --name=web --net=my-net --env="constraint:node==node2" hypriot/rpi-nano-httpd`
-    
-  - Use a container on a different node to ping the web server within the virtual network. Here, the node's hostname is **node3**:
-
-    `docker run -it --rm --net=my-net --env="constraint:node=node3" hypriot/armhf-busybox wget -O- http://web`
-
-Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orchestration-networking/swarm-local.sh), ported by @StefanScherer.
-
-### Use Case 2: Suggest a use case!
+  - On any device in the same network, open a browser at **http://{IP of the node}:8500**. You should see the Consul web interface listing one node. Proceed with the next step only if you see the web interface. Grant the node about 2 minutes to boot up.
+  - Install the Cluster Lab package on all other nodes with the same command as above. About 2 minutes after each install, you should see the nodes being listed in the Consul web interface.
 
 
 ## Troubleshooting
-  - Check if the service providing the cluster functionality is running. Execute
+For both the __Vagrant__ and the __Raspberry Pi__ variant of the Cluster Lab the Cluster Lab is managed as systemd service.
+This mean that the Cluster Lab is started on each node when the node is booting.
 
-    `sudo systemctl status cluster-start`
+The Cluster Lab can be started and stopped on each cluster node like this:
 
-  - Start the cluster service manually by
+```
+# start Cluster Lab
+$ cluster-lab start
 
-    `sudo systemctl start cluster-start`
+# stop Cluster Lab
+$ cluster-lab stop
+```
 
-  - In case the node, which started second also cosiders itself to be the master, your network switch might not support VLAN, i.e. it filters out VLAN tags of network packages. To test if your switch supports VLAN, follow these steps:
-    - Take two Linux machines of any kind, regardless of its settings. You can also use the Cluster Lab SD card image as operating system. If you run your Desktop machine on Linux, you can consider this one as first machine. 
-    - Connect these machines to your switch.
-    - Log in to the first machine. Run
-    ```
-    sudo ip link add link eth0 name eth0.555 type vlan id 555
-    sudo ip link set dev eth0.555 up
-    sudo ip addr add 10.10.10.1/24 dev eth0.555 
-    ```
-    - Log in to the second machine. Run
-    ```
-    sudo ip link add link eth0 name eth0.555 type vlan id 555
-    sudo ip link set dev eth0.555 up
-    sudo ip addr add 10.10.10.2/24 dev eth0.555 
-    ping 10.10.10.1
-    ```
-    The `ping` should spit out some feedback from `10.10.10.1`. Otherwise, your switch probably does not support VLAN. Since usually this feature is provided even by cheap switches, try to find just any other switch you may have around.
-    
-    - Reset the machines to the state before you started this test. Execute on both of them
-    
-    `ip link delete eth0.555`
+In case of problems the verbosity level of the start and stop commands can be increased to show more information.
 
-  - In case you get an error `network sandbox join failed: error creating vxlan interface: operation not supported` or similar vxlan not supported errors, your linux kernel misses vxlan support. This problem can be fixed by compiling your own kernel with `CONFIG_VXLAN=m`. The provider of your linux distribution might provide more details on how to do this.
-  - If you would like to change the VLAN ID, execute the following commands on all nodes on the cluster
-    
-    - Make sure that you are logged in as **root**. Otherwise, execute`sudo -s`.
-    
-    - `systemctl start cluster-stop`
-    
-    - Replace `XXX` in the following command with the VLAN ID you would like to use and execute it:
-     
-      `cd /usr/local/bin && sed -i 's/eth0.200/eth0.XXX/g' cluster-stop.sh && sed -i 's/eth0.200/eth0.XXX/g' cluster-start.sh && sed -i 's/id\ 200/id\ XXX/g' cluster-start.sh && sed -i 's/tag\ 200/tag\ XXX/g' cluster-start.sh && sed -i 's/vlan\ 200/vlan\ XXX/g' cluster-start.sh`
-    
-    - To test it, execute `grep -r 200 cluster-*`. If you only get 5 lines of code as output, the substitution was successful.
-    
-    - `systemctl start cluster-start`
-    
-    - To test it, execute `ip a`. You should see a network interface **eth0.XXX@eth0** showing your new VLAN ID.
-  - A reboot often helps :-)
-  - Ping us on Twitter or request help in our [community chat](https://gitter.im/hypriot/talk).
+```
+$ VERBOSE=true cluster-lab start
 
-## Known Bugs
-- Consul follower join the cluster leader with the docker0 bridge IP
-- Restart after changing avahi-daemon config is missing
+Internet Connection
+  [PASS]   eth1 exists
+  [PASS]   eth1 has an ip address
+  [PASS]   Internet is reachable
+  [PASS]   DNS works
 
-## Roadmap
+Networking
+  [PASS]   eth1 exists
+  [PASS]   vlan os package exists
+  [PASS]   Avahi os package exists
+  [PASS]   Avahi-utils os package exists
+  [PASS]   Avahi process exists
+  [PASS]   Avahi cluster-leader.service file is absent
 
-### Ideas of Features
-- Instead of installing additional packages in the cluster-start.sh, add these additional packages as *dependency* to deb package (e.g. dnsmasq)
-- Install deb package in ClusterLab image instead of copying cluster-lab files.
-- Add ahmetalpbalkan/wagl as service discovery
-- Make consul follower listen and bind only to the VLAN IP [Bug 1]
-- Make VLAN id and IP range changeable
-- Add leadercheck to consul (watches consul info)
-- Combine the two systemd services (cluster-start and cluster-stop) into one with ExecStart and ExecStop
-- Test with other hardware, such as Raspberry Pi Zero
-- Test with Raspbian and other OSes (e.g. armbian)
+Configure basic networking
 
-### Ideas of Use Cases:
-- Run Dockerui-Image on first boot (like swarm)
-- Kubernetes
-- Crate.io
-- Run Registrator, Consul-Template, HAProxy, and hypriot/busybox-httpd on first boot (like swarm)
+Networking
+  [PASS]   eth1.200 exists
+  [PASS]   eth1.200 has correct IP from vlan network
+  [PASS]   Cluster leader is reachable
+  [PASS]   eth1.200 has exactly one IP
+  [PASS]   eth1.200 has no local link address
+  [PASS]   Avahi process exists
+  [PASS]   Avahi is using eth1.200
+  [PASS]   Avahi cluster-leader.service file exists
 
+This node is Leader
 
-## Some technical background about how it works
-  - Most network communications in the cluster are primarily exchanged within a Virtual LAN (VLAN) with ID `200`, which is assigned on `eth0` on each device. <br />
-   The network mask of the VLAN is `192.168.200.0/24`.
-  - The node that runs the cluster lab software first is the *cluster leader*. The cluster leader's IP address is statically configured to `192.168.200.1`. The cluster leader bootstraps Consul as first instance within the cluster.
-   The cluster leader starts a DHCP server using DNSMasq and dynamically assigns IP addresses to all other nodes in the cluster, which are called *slaves*.
-   Thereby, IP addresses from DHCP are only provided within the VLAN, at a range from `192.168.200.101` to `192.168.200.200`
-  - After the slaves successfully received their IP addresses, they join the Consul cluster that has been created by the cluster leader. In addition, all slaves join
-    Docker Swarm, which is managed via Consul.
-  - The Swarm management interface is running on the master node on Swarm's default Port:`tcp://192.168.200.1:2378`
+DHCP is enabled
+
+DNSmasq
+  [PASS]   dnsmasq os package exists
+  [PASS]   dnsmasq process exists
+  [PASS]   /etc/dnsmasq.conf backup file is absent
+
+Configure DNSmasq
+
+DNSmasq
+  [PASS]   dnsmasq process exists
+  [PASS]   /etc/dnsmasq.conf backup file exists
+
+Docker
+  [PASS]   docker is installed
+  [PASS]   Docker process exists
+  [PASS]   /etc/default/docker backup file is absent
+
+Configure Docker
+
+Docker
+  [PASS]   Docker is running
+  [PASS]   Docker is configured to use Consul as key-value store
+  [PASS]   Docker is configured to listen via tcp at port 2375
+  [PASS]   Docker listens on 192.168.200.30 via tcp at port 2375 (Docker-Engine)
+
+Consul
+  [PASS]   Consul Docker image exists
+  [PASS]   Consul Docker container is running
+  [PASS]   Consul is listening on port 8300
+  [PASS]   Consul is listening on port 8301
+  [PASS]   Consul is listening on port 8302
+  [PASS]   Consul is listening on port 8400
+  [PASS]   Consul is listening on port 8500
+  [PASS]   Consul is listening on port 8600
+  [PASS]   Consul API works
+  [PASS]   Cluster-Node is pingable with IP 192.168.200.30
+  [PASS]   Cluster-Node is pingable with IP 192.168.200.45
+  [PASS]   Cluster-Node is pingable with IP 192.168.200.1
+  [PASS]   No Cluster-Node is in status 'failed'
+  [PASS]   Consul is able to talk to Docker-Engine on port 7946 (Serf)
+
+Swarm
+  [PASS]   Swarm-Join Docker container is running
+  [PASS]   Swarm-Manage Docker container is running
+  [PASS]   Number of Swarm and Consul nodes is equal which means our cluster is healthy
+```
+
+If everything works there should only be [PASS]ing tests.
+
+There are also two more command that help troubeshoot problems.
+
+After the Cluster Lab was started with `cluster-lab start` one can verify the health of the cluster on each node with
+
+```
+$ cluster-lab health
+```
+
+This should output the results of various self tests and all should [PASS].
+
+If there are problems/failing tests a good strategy is to stop the Cluster Lab with
+
+```
+$ cluster-lab stop
+```
+
+This should reset the node into the original state it had before the start of the Cluster Lab.
+
+Afterwards we can check if everything is in order to start the Cluster Lab with
+
+```
+$ cluster-lab dependencies
+```
+
+Here we should also see only [PASS]ing tests.
+
+## Community & Help
+Get in touch with us and the community in our [Gitter chat](https://gitter.im/hypriot/talk).
 
 ## Related projects
+
   - http://blog.arungupta.me/docker-swarm-cluster-using-consul/
   - https://github.com/luxas/kubernetes-on-arm
   - http://besn0847.blogspot.de/2015/11/building-internet-wide-container.html
@@ -196,11 +289,8 @@ Inspired by [@chanezon](https://github.com/chanezon/docker-tips/blob/master/orch
   - http://blog.scottlowe.org/2015/03/06/running-own-docker-swarm-cluster/
   - https://github.com/dduportal/rpi-utils/blob/master/documentation/docker-swarm.md
 
-## Maintainers and Core Developers
-Git does not reflect all involved contributors when doing pair programming. The core developers of this software are
+## Maintainer
 
   - Andreas Eiermann @firecyberice
   - Mathias Renner @MathiasRenner
   - Govinda Fichtner @Govinda-Fichtner
-
-from the Hypriot Team.
