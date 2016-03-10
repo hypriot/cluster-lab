@@ -1,0 +1,156 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+    echo "This script should be run using sudo or as the root user"
+    exit 1
+fi
+
+# include common helper functions
+. /usr/local/lib/cluster-lab/common
+
+# include cluster-lab config
+. /etc/cluster-lab/cluster.conf
+
+# choose the correct Docker image for the current architecture
+ARCHITECTURE=$(uname -m)
+case "$ARCHITECTURE" in
+    arm*)
+        IMAGE_SWARM=hypriot/rpi-swarm:1.1.0
+        IMAGE_CONSUL=hypriot/rpi-consul:0.6.3
+        ;;
+    amd64|x86_64)
+        IMAGE_SWARM=swarm:1.1.0
+        IMAGE_CONSUL=gliderlabs/consul:0.6
+        ;;
+    * )
+        echo "Your architecture is not supported."
+        ;;
+esac
+
+# If VLAN is enabled the Cluster Lab
+# network is based on VLAN_INTERFACE
+# or else it is based on INTERFACE
+if [[ "${ENABLE_VLAN}" == "true" ]]; then
+  CLUSTER_INTERFACE="${INTERFACE}.${VLAN_ID}"
+else
+  CLUSTER_INTERFACE="${INTERFACE}"
+fi
+
+# include cluster-lab functions
+for sourcefile in /usr/local/lib/cluster-lab/*_lib; do
+  . $sourcefile
+done
+
+usage () {
+cat << EOM
+usage:
+
+  cluster-lab start            Start the Cluster Lab.
+
+  cluster-lab stop             Stop the Cluster Lab.
+
+  cluster-lab dependencies     Check dependencies for the Cluster Lab.
+
+  cluster-lab health           Check health of the Cluster Lab.
+
+EOM
+}
+
+function start(){
+  check_internet_connection
+
+  pre_check_networking
+  exit_with_message_on_error $? "Networking is broken"
+
+  configure_networking
+
+  post_check_networking
+  exit_with_message_on_error $? "Networking  broken"
+
+  # start additional services if cluster leader
+  if [[ "$(is_node_cluster_leader)" == "0" ]]; then
+    if [[ $(is_verbose) -eq 0 ]]; then
+      echo -e "\n\e[34mThis node is Leader\e[0m"
+    fi
+    if [[ "${ENABLE_DHCP}" == "true" ]]; then
+      if [[ $(is_verbose) -eq 0 ]]; then
+        echo -e "\n\e[34mDHCP is enabled\e[0m"
+      fi
+      pre_check_clusterleader
+      configure_clusterleader
+      post_check_clusterleader
+    fi
+  else
+    if [[ $(is_verbose) -eq 0 ]]; then
+      echo -e "\n\e[34mThis node is Follower\e[0m"
+    fi
+  fi
+  pre_check_docker
+  configure_docker
+  post_check_docker
+
+  pre_check_docker_container
+  run_docker_container
+  post_check_docker_container
+
+}
+
+function stop(){
+  reset_clusterleader
+  pre_check_clusterleader
+
+  reset_docker
+  pre_check_docker
+
+  remove_docker_container
+
+  reset_networking
+  pre_check_networking
+  check_internet_connection
+}
+
+function dependencies(){
+  check_internet_connection
+  pre_check_networking
+  pre_check_clusterleader
+  pre_check_docker
+  check_docker_images
+  pre_check_docker_container
+}
+
+function health(){
+  check_internet_connection
+  post_check_networking
+  if [[ "$(is_node_cluster_leader)" == "0" ]]; then
+    post_check_clusterleader
+  fi
+  post_check_docker
+  post_check_docker_container
+}
+
+VERBOSE="${VERBOSE:-false}"
+
+if [ $# -eq 1 ]; then
+  CL_ARGUMENT="${1}"
+  case "$1" in
+    "start" )
+      start
+      ;;
+    "stop" )
+      stop
+      ;;
+    "dependencies" )
+      dependencies
+      ;;
+    "health" )
+      health
+      ;;
+    * )
+      usage
+      ;;
+  esac
+elif [[ $DEBUG == "true" ]]; then
+  eval "$@"
+else
+  usage
+fi

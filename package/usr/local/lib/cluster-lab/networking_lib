@@ -1,0 +1,252 @@
+#!/usr/bin/env bash
+
+declare NODE_IP
+declare LEADER_IP
+
+# VLAN configuration
+function add_vlan_interface(){
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    ip link add link "${INTERFACE}" name "${CLUSTER_INTERFACE}" type vlan id "${VLAN_ID}" > /dev/null 2>&1
+  fi
+}
+
+function remove_vlan_interface(){
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    ip link delete dev "${CLUSTER_INTERFACE}" type vlan > /dev/null 2>&1
+  fi
+}
+
+# IP configuration
+function add_ip_to_cluster_interface(){
+  local ip="$1"
+  ip addr add "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
+  ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
+}
+
+function remove_ip_from_cluster_interface(){
+  local ip="$1"
+    ip addr delete "${ip}${VLAN_NETMASK}" dev "${CLUSTER_INTERFACE}" > /dev/null 2>&1
+}
+
+function ensure_node_ip_is_set(){
+  if [[ -z "${NODE_IP}" ]]; then
+    if [[ ("${ENABLE_DHCP}" == "true") && ( -z "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" ) ]]; then
+      ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
+      timeout 3 dhclient "${CLUSTER_INTERFACE}"
+    fi
+
+    # try 3 times to get an ip address
+    for i in {1..3}; do
+      NODE_IP=$(get_ip_of_interface "${CLUSTER_INTERFACE}")
+      if [[ -z "${NODE_IP}" ]]; then
+        break
+        echo "tried to get ip $i times"
+      fi
+      sleep 2
+    done
+  fi
+}
+
+function ensure_leader_ip_is_set(){
+  if [[ -z "${LEADER_IP}" ]]; then
+
+    if [[ -z "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" ]]; then
+      add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
+      systemctl restart avahi-daemon.service
+      sleep 2
+    fi
+
+    avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable --ignore-local)
+    LEADER_IP=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
+
+    remove_ip_from_cluster_interface "${CLUSTER_TEST_IP}"
+  fi
+}
+
+function is_node_cluster_leader(){
+  if [[ -z "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" ]]; then
+    add_ip_to_cluster_interface "${CLUSTER_TEST_IP}"
+    systemctl restart avahi-daemon.service
+    sleep 2
+  fi
+
+  avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
+  local leader_ip=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
+
+  remove_ip_from_cluster_interface "${CLUSTER_TEST_IP}"
+
+  ensure_node_ip_is_set
+  [[ "${NODE_IP}" == "${leader_ip}" ]]
+  echo $?
+}
+
+function is_link_local_ip(){
+  local ip="${1}"
+
+  if [[ "$ip" == "169.254."* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+function add_avahi_cluster_leader_service_file(){
+cat << EOM > /etc/avahi/services/cluster-leader.service
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">Cluster-Leader=%h</name>
+  <service>
+    <type>_cluster._tcp</type>
+    <port>22</port>
+    <txt-record>os-release=hypriot</txt-record>
+  </service>
+</service-group>
+EOM
+}
+
+# various checks of network connectivity
+function check_internet_connection(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nInternet Connection"
+  fi
+  ERRORS=0
+
+  ip link show | grep -q "${INTERFACE}"
+  evaluate_result $? "  ${INTERFACE} exists"
+
+  [[ ! -z "$(get_ip_of_interface "${INTERFACE}")" ]]
+  evaluate_result $? "  ${INTERFACE} has an ip address"
+
+  ping -W 1 -c 2 8.8.8.8 > /dev/null 2>&1
+  evaluate_result $? "  Internet is reachable"
+
+  timeout 5 ping -c 1 google.com > /dev/null 2>&1
+  evaluate_result $? "  DNS works"
+
+  return "$ERRORS"
+}
+
+function pre_check_networking(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nNetworking"
+  fi
+  ERRORS=0
+
+  ip link show | grep -q "${INTERFACE}"
+  evaluate_result $? "  ${INTERFACE} exists"
+
+  check_if_os_package_exists "vlan"
+  evaluate_result $? "  vlan os package exists"
+
+  check_if_os_package_exists "avahi"
+  evaluate_result $? "  Avahi os package exists"
+
+  check_if_os_package_exists "avahi-utils"
+  evaluate_result $? "  Avahi-utils os package exists"
+
+  check_if_process_exists "avahi-daemon"
+  evaluate_result $? "  Avahi process exists"
+
+  [[ ! -f "/etc/avahi/services/cluster-leader.service" ]]
+  evaluate_result $? "  Avahi cluster-leader.service file is absent"
+
+  return "$ERRORS"
+}
+
+function post_check_networking(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nNetworking"
+  fi
+  ERRORS=0
+
+  ip link show | grep -q "${CLUSTER_INTERFACE}"
+  evaluate_result $? "  ${CLUSTER_INTERFACE} exists"
+
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    # check if the vlan 192.168.200 subnet exists
+    VLAN_SUBNET=$(echo "${CLUSTER_LEADER_IP}" | cut -d'.' -f1-3)
+    regex="$(escape_ip_for_regex "${VLAN_SUBNET}")\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    [[ "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" =~ $regex ]]
+    evaluate_result $? "  ${CLUSTER_INTERFACE} has correct IP from vlan network"
+  fi
+
+  avahi_query_result=$(avahi-browse _cluster._tcp --terminate --resolve --parsable)
+  leader_ip_from_avahi=$(echo "$avahi_query_result" | grep '^=' | grep ';Cluster-Leader' |  grep "${CLUSTER_INTERFACE}" | grep IPv4 | cut -d ';' -f8)
+  ping -W 1 -c 2 "${leader_ip_from_avahi}" > /dev/null 2>&1
+  evaluate_result $? "  Cluster leader is reachable"
+
+  number_of_ips=$(ip addr show dev "${CLUSTER_INTERFACE}" 2>/dev/null | grep -c "inet\s")
+  [[ "$number_of_ips" -eq 1 ]]
+  evaluate_result $? "  ${CLUSTER_INTERFACE} has exactly one IP"
+
+  regex="169\.254\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+  [[ ! "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" =~ $regex ]]
+  evaluate_result $? "  ${CLUSTER_INTERFACE} has no local link address"
+
+  check_if_process_exists "avahi"
+  evaluate_result $? "  Avahi process exists"
+
+  [[ $(avahi-browse --all --terminate | grep -c "${CLUSTER_INTERFACE}") -gt 0 ]]
+  evaluate_result $? "  Avahi is using ${CLUSTER_INTERFACE}"
+
+  if [[ $(is_node_cluster_leader) == 0 ]]; then
+    [[ -f "/etc/avahi/services/cluster-leader.service" ]]
+    evaluate_result $? "  Avahi cluster-leader.service file exists"
+  fi
+
+  return "$ERRORS"
+}
+
+# setup basic networking
+function configure_networking(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mConfigure basic networking\e[0m"
+  fi
+
+  add_vlan_interface
+  ensure_leader_ip_is_set
+  if [[ -z "${LEADER_IP}" ]]; then
+    # there is no leader yet
+
+    if [[ "${ENABLE_DHCP}" == "true" ]]; then
+      # ensure that there is no link local ip on the CLUSTER_INTERFACE
+      ip addr flush dev "${CLUSTER_INTERFACE}"
+      add_ip_to_cluster_interface "${CLUSTER_LEADER_IP}"
+    fi
+    add_avahi_cluster_leader_service_file
+  else
+    # we already have a leader
+    ensure_node_ip_is_set
+    if [[ -z "${NODE_IP}" ]]; then
+      # we did not get an ip from dhcp or link local
+      echo -e "Failed to configure networking. Could not get an IP.\nTrying to rollback networking configuration"
+      reset_networking
+      exit 1
+    else
+      # we have an ip
+      if [[ "$(is_link_local_ip "${NODE_IP}")" == "1" ]]; then
+        # we did not get an ip from dhcp
+        echo -e "Failed to configure networking: Could not get an IP via DHCP. \nTrying to rollback networking configuration"
+        reset_networking
+        exit 1
+      fi
+    fi
+  fi
+}
+
+# reset basic networking
+function reset_networking(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mReset basic networking\e[0m"
+  fi
+
+  if [[ "${ENABLE_DHCP}" == "true" ]]; then
+    ip addr flush dev "${CLUSTER_INTERFACE}"
+  fi
+
+  remove_ip_from_cluster_interface "${CLUSTER_LEADER_IP}"
+  remove_vlan_interface
+
+  rm -f /etc/avahi/services/cluster-leader.service
+}

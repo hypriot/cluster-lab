@@ -2,7 +2,7 @@ Package: <NAME>
 Version: <VERSION>
 Section: admin
 Priority: optional
-Architecture: armhf
+Architecture: all
 Essential: no
 Installed-Size: <SIZE>
 Maintainer: blog.hypriot.com

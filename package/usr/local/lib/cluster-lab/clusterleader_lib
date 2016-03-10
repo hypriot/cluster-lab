@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+# checks for dnsmasq
+function pre_check_clusterleader(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDNSmasq"
+  fi
+  ERRORS=0
+
+  check_if_os_package_exists "dnsmasq"
+  evaluate_result $? "  dnsmasq os package exists"
+
+  check_if_process_exists "dnsmasq"
+  evaluate_result $? "  dnsmasq process exists"
+
+  [[ ! -f "/etc/dnsmasq.conf.cluster-lab-backup" ]]
+  evaluate_result $? "  /etc/dnsmasq.conf backup file is absent"
+
+  return "$ERRORS"
+}
+
+function post_check_clusterleader(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\nDNSmasq"
+  fi
+  ERRORS=0
+
+  check_if_process_exists "dnsmasq"
+  evaluate_result $? "  dnsmasq process exists"
+
+  [[ -f "/etc/dnsmasq.conf.cluster-lab-backup" ]]
+  evaluate_result $? "  /etc/dnsmasq.conf backup file exists"
+
+  return "$ERRORS"
+}
+
+# DHCP dnsmasq
+function configure_clusterleader(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mConfigure DNSmasq\e[0m"
+  fi
+
+  if [[ ! -f "/etc/dnsmasq.conf.cluster-lab-backup" ]]; then
+    cp /etc/dnsmasq.conf /etc/dnsmasq.conf.cluster-lab-backup
+  fi
+cat << EOM > /etc/dnsmasq.conf
+
+interface=${CLUSTER_INTERFACE}
+
+# set domain name
+#domain=hypriot.cluster
+
+# general DHCP stuff (see RFC 2132)
+#
+# 1:  subnet masq
+# 3:  default router
+# 6:  DNS server
+# 12: hostname
+# 15: DNS domain (unneeded with option 'domain')
+# 28: broadcast address
+# 42: time server
+#
+
+dhcp-authoritative
+dhcp-leasefile=/var/lib/misc/dnsmasq.leases
+dhcp-option=1,${DHCP_NETMASK}
+dhcp-option=28,${DHCP_BROADCAST}
+
+# disable announcing gateway
+dhcp-option=3
+# disable announcing dns server
+dhcp-option=6
+
+
+# dynamic DHCP range with a 1 hour lease
+#
+dhcp-range=${DHCP_RANGE_FROM},${DHCP_RANGE_TO},1h
+
+EOM
+
+systemctl restart dnsmasq.service
+}
+
+function reset_clusterleader(){
+  if [[ $(is_verbose) -eq 0 ]]; then
+    echo -e "\n\e[34mReset DNSmasq\e[0m"
+  fi
+  rm -f /var/lib/misc/dnsmasq.leases
+  if [ -f "/etc/dnsmasq.conf.cluster-lab-backup" ];then
+    mv -f /etc/dnsmasq.conf.cluster-lab-backup /etc/dnsmasq.conf
+    systemctl restart dnsmasq.service
+  fi
+}
