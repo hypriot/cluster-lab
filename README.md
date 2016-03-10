@@ -25,7 +25,7 @@ __Cluster Lab is multi-arch__
 There are Cluster Lab packages for ARM and X86_64.
 
 ## Getting started
-A node in a Cluster Lab can either be a __leader__ or a __follower__.__
+A node in a Cluster Lab can either be a __leader__ or a __follower__.
 The role of a node is determined by the start order of the cluster nodes. The first node autmatically becomes the __leader__ node.
 All nodes that start after the __leader__ automatically become __follower__ nodes.
 
