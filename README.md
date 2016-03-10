@@ -252,7 +252,7 @@ If everything works there should only be [PASS]ing tests.
 
 There are also two more command that help troubeshoot problems.
 
-After the Cluster Lab was started with `cluster-lab start` one can verify the health of the cluster on each node with
+After the Cluster Lab is started with `cluster-lab start` one can verify the health of the cluster on each node with
 
 ```
 $ cluster-lab health
