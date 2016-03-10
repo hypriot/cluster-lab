@@ -42,9 +42,12 @@ Vagrant.configure(2) do |config|
 
     systemctl stop docker
     cp -f /cluster-lab-src/vagrant/docker.service /lib/systemd/system/
+
+    # configure Docker to use overlay filesystem
+    echo "DOCKER_OPTS='-s overlay'" >> /etc/default/docker
+
     systemctl daemon-reload
     systemctl start docker
-
 
     # install Cluster Lab dependencies
     apt-get install -y avahi-daemon vlan avahi-utils dnsmasq
