@@ -1,0 +1,20 @@
+sudo: required
+services:
+- docker
+language: bash
+script:
+- VERSION=${TRAVIS_TAG} make deb
+branches:
+  only:
+  - master
+  - /^v\d.*$/
+deploy:
+  provider: packagecloud
+  repository: Schatzkiste
+  username: Hypriot
+  token:
+    secure: r/TP5QH/itol9zyQMBkrLITzF/aApVQzSZmHtWEsETVyiJyHFMLjO+0H8ZKdawNWfyXtwzV5drIW+f8xbuba+9wm+1W2/3IONFLMU4xNSwF527G37lUTPox3AdEuYeakExKuN9D+uVZwKnUIo5tUkj9mB6ZOYOznduAl3Zso8ko+CjCheMzyZxCu4+m7jilmJJI5KjYo6h/Q4FN7uOjOcTX6A4NnWr5rmRj25UYkP7GDdAfDVcC+cykHG3hPFpmLr6jIMGtvUWBwI+yqSpiAGK5EmuzeTuLOd53iz8crxeGdZPud1jt07lfiW69JwhD8iZANyauItRmDs3MWs86wYWifg3HNzxZp9buphTW3VDbmWfbC3+Eo0L+A8+ikYeae0nnbJskfjgr1oPTlCJaxJS3Ce5/CFDuo4tBXo5CAlYyWK6fmsZbNkqB7KqTXwaDbaqocEEw28rqrE/7iuw4DAXiwFVWIaU6O6vokL8OP1REXB1QNmZPcOGysOFIlpNFTK4bIFBzAZxHuwi+QTAnOJk/2mBsEzGKXRpOepIAMvAsF01seIxfMJSqlxJPV+yLchxAePpW9m1+7sR5mOwsvRg6kXDN6j/adRjYWpMCJi9TlyGrsbt38zPz00fNH2v7Q8u7lMuWZ2/C1609ehBUXF3H9QPR1hxfJZNONveECAz0=
+  dist: debian/wheezy
+  on:
+    tags: true
+    repo: hypriot/cluster-lab

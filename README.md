@@ -1,4 +1,5 @@
 # Hypriot Cluster Lab
+[![Build Status](https://travis-ci.org/hypriot/cluster-lab.svg?branch=master)](https://travis-ci.org/hypriot/cluster-lab)
 
 The Hypriot Cluster Lab allows to create a Docker Swarm Cluster very easily.
 
