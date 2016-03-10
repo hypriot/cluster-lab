@@ -4,12 +4,14 @@
 # per default the Cluster Lab starts with three nodes
 # a different number of nodes can be provides with the
 # NUMBER_OF_NODES environment variable
-number_of_nodes = ENV['NUMBER_OF_NODES'].to_i || 3
+
+number_of_nodes = ENV['NUMBER_OF_NODES'] || 3
 
 # the number of total nodes minus the leader is the number of followers
-number_of_followers = number_of_nodes - 1
+number_of_followers = number_of_nodes.to_i - 1
 
-raise 'The Cluster Lab needs at least 3 nodes to operate' if number_of_nodes < 3
+puts number_of_nodes
+raise 'The Cluster Lab needs at least 3 nodes to operate' if (number_of_nodes < 3)
 
 Vagrant.configure(2) do |config|
 
