@@ -154,8 +154,8 @@ Note that the network switch must not filter IEEE 802.1Q VLAN flags out of netwo
 
 
 ## Troubleshooting
-For both the __Vagrant__ and the __Raspberry Pi__ variant of the Cluster Lab the Cluster Lab is managed as systemd service.
-This mean that the Cluster Lab is started on each node when the node is booting.
+For both the __Vagrant__ and the __Raspberry Pi__ variant of the Cluster Lab the Cluster Lab is managed as a systemd service.
+This means that the Cluster Lab is started on each node when the node is booting.
 
 The Cluster Lab can be started and stopped on each cluster node like this:
 
@@ -167,7 +167,7 @@ $ cluster-lab start
 $ cluster-lab stop
 ```
 
-In case of problems the verbosity level of the start and stop commands can be increased to show more information.
+In case of problems the verbosity level of the start and stop commands can be increased to show more information about potential problems.
 
 ```
 $ VERBOSE=true cluster-lab start
