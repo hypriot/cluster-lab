@@ -20,10 +20,10 @@ Cluster-Lab nodes are configured to form a cluster fully automatically.
 No configuration by the user is necessary.
 
 __Cluster Lab is fast to set up__  
-On ARM a fully working cluster can be set up in minutes.
+Get started in minutes rather than hours.
 
-__Cluster Lab is multi-arch__  
-There are Cluster Lab packages for ARM and X86_64.
+__Cluster Lab is Multi-Platform__  
+Run Cluster Lab on Mac OS X, Linux, Windows and ARM devices.
 
 ## Getting started
 A node in a Cluster Lab can either be a __leader__ or a __follower__.
