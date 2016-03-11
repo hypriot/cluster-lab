@@ -128,7 +128,7 @@ As you can see we now have working Swarm Cluster with 3 nodes.
 
 ### Raspberry Pi / ARM
 To get started with the Cluster Lab on a Raspberry Pi you will need the following:
--  At least two Raspberry Pi's 1 or 2 and for each a __power supply_, a __MicroSD card__ and a __network cable__.
+-  At least two Raspberry Pi's (v1,2,or 3) and for each a __power supply_, a __MicroSD card__ and a __network cable__.
 -  A network switch that is connected to the Internet
 
 Note that the network switch must not filter IEEE 802.1Q VLAN flags out of network packets.
