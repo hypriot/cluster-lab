@@ -243,10 +243,12 @@ function reset_networking(){
 
   if [[ "${ENABLE_DHCP}" == "true" ]]; then
     ip addr flush dev "${CLUSTER_INTERFACE}"
+    remove_ip_from_cluster_interface "${CLUSTER_LEADER_IP}"
   fi
-
-  remove_ip_from_cluster_interface "${CLUSTER_LEADER_IP}"
-  remove_vlan_interface
+  
+  if [[ "${ENABLE_VLAN}" == "true" ]]; then
+    remove_vlan_interface
+  fi
 
   rm -f /etc/avahi/services/cluster-leader.service
 }
