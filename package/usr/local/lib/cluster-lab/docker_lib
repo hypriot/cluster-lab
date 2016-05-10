@@ -57,7 +57,7 @@ function configure_docker(){
 
   # create backup of /etc/default/docker config
   if [[ (! -f "/etc/default/docker.cluster-lab-backup") ]]; then
-    cp /etc/default/docker /etc/default/docker.cluster-lab-backup
+    cp /etc/docker/daemon.json /etc/docker/daemon.json.cluster-lab-backup
   fi
 
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
@@ -74,7 +74,7 @@ function configure_docker(){
     CLUSTER_NODE_ROLE="follower"
   fi
 
-  echo "DOCKER_OPTS=$(eval "echo ${DOCKER_OPTS}")" > /etc/default/docker
+  echo "DOCKER_OPTS=$(eval "echo ${DOCKER_OPTS}")" > /etc/docker/daemon.json
 
   systemctl restart docker.service
 }
@@ -85,7 +85,7 @@ function reset_docker(){
   fi
 
   if [[ -f "/etc/default/docker.cluster-lab-backup" ]]; then
-    mv -f /etc/default/docker.cluster-lab-backup /etc/default/docker
+    mv -f /etc/docker/daemon.json.cluster-lab-backup /etc/docker/daemon.json
     systemctl restart docker.service
   fi
 }
