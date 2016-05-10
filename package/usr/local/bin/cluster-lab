@@ -14,7 +14,7 @@ fi
 # choose the correct Docker image for the current architecture
 ARCHITECTURE=$(uname -m)
 case "$ARCHITECTURE" in
-    arm*)
+    arm|aarch64*)
         IMAGE_SWARM=hypriot/rpi-swarm:1.2.1
         IMAGE_CONSUL=hypriot/rpi-consul:0.6.4
         ;;
