@@ -32,7 +32,7 @@ function ensure_node_ip_is_set(){
   if [[ -z "${NODE_IP}" ]]; then
     if [[ ("${ENABLE_DHCP}" == "true") && ( -z "$(get_ip_of_interface "${CLUSTER_INTERFACE}")" ) ]]; then
       ip link set dev "${CLUSTER_INTERFACE}" up > /dev/null 2>&1
-      timeout 3 dhclient "${CLUSTER_INTERFACE}"
+      timeout 10 dhclient "${CLUSTER_INTERFACE}"
     fi
 
     # try 3 times to get an ip address
@@ -245,7 +245,7 @@ function reset_networking(){
     ip addr flush dev "${CLUSTER_INTERFACE}"
     remove_ip_from_cluster_interface "${CLUSTER_LEADER_IP}"
   fi
-  
+
   if [[ "${ENABLE_VLAN}" == "true" ]]; then
     remove_vlan_interface
   fi

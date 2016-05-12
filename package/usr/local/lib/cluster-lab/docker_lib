@@ -75,7 +75,7 @@ function configure_docker(){
   fi
 
   echo -e "$(eval "echo -e ${DOCKER_OPTS}")" > /etc/docker/daemon.json
-
+  systemctl daemon-reload
   systemctl restart docker.service
 }
 
@@ -86,6 +86,7 @@ function reset_docker(){
 
   if [[ -f "/etc/docker/daemon.json.cluster-lab-backup" ]]; then
     mv -f /etc/docker/daemon.json.cluster-lab-backup /etc/docker/daemon.json
+    systemctl daemon-reload
     systemctl restart docker.service
   fi
 }
