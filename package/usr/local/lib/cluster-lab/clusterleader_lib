@@ -63,18 +63,18 @@ interface=${CLUSTER_INTERFACE}
 
 dhcp-authoritative
 dhcp-leasefile=/var/lib/misc/dnsmasq.leases
-dhcp-option=1,${DHCP_NETMASK}
-dhcp-option=28,${DHCP_BROADCAST}
+dhcp-option=${CLUSTER_INTERFACE},1,${DHCP_NETMASK}
+dhcp-option=${CLUSTER_INTERFACE},28,${DHCP_BROADCAST}
 
 # disable announcing gateway
-dhcp-option=3
+dhcp-option=${CLUSTER_INTERFACE},3
 # disable announcing dns server
-dhcp-option=6
+dhcp-option=${CLUSTER_INTERFACE},6
 
 
 # dynamic DHCP range with a 1 hour lease
 #
-dhcp-range=${DHCP_RANGE_FROM},${DHCP_RANGE_TO},1h
+dhcp-range=${CLUSTER_INTERFACE},${DHCP_RANGE_FROM},${DHCP_RANGE_TO},1h
 
 EOM
 
