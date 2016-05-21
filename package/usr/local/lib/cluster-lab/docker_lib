@@ -74,7 +74,12 @@ function configure_docker(){
     CLUSTER_NODE_ROLE="follower"
   fi
 
-  echo -e "$(eval "echo -e ${DOCKER_OPTS}")" > /etc/docker/daemon.json
+  OPTS="$(eval "echo -e ${DOCKER_OPTS}")"
+
+  sed -i -e \
+"s|^ExecStart=/usr/bin/docker daemon.*$|ExecStart=/usr/bin/docker daemon $OPTS|g" \
+/etc/systemd/system/docker.service
+
   systemctl daemon-reload
   systemctl restart docker.service
 }
