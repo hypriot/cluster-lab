@@ -23,8 +23,8 @@ function pre_check_docker(){
   check_if_process_exists "docker"
   evaluate_result $? "  Docker process exists"
 
-  [[ (! -f "/etc/docker/daemon.json.cluster-lab-backup") ]]
-  evaluate_result $? "  /etc/docker/daemon.json backup file is absent"
+  [[ (! -f "/etc/systemd/system/docker.service.cluster-lab-backup") ]]
+  evaluate_result $? "  /etc/systemd/system/docker.service backup file is absent"
 }
 
 function post_check_docker(){
@@ -56,8 +56,8 @@ function configure_docker(){
   fi
 
   # create backup of /etc/docker/daemon.json config
-  if [[ (! -f "/etc/docker/daemon.json.cluster-lab-backup") ]]; then
-    cp /etc/docker/daemon.json /etc/docker/daemon.json.cluster-lab-backup
+  if [[ (! -f "/etc/systemd/system/docker.service.cluster-lab-backup") ]]; then
+    cp /etc/systemd/system/docker.service /etc/systemd/system/docker.service.cluster-lab-backup
   fi
 
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
@@ -84,8 +84,8 @@ function reset_docker(){
     echo -e "\n\e[34mReset Docker\e[0m"
   fi
 
-  if [[ -f "/etc/docker/daemon.json.cluster-lab-backup" ]]; then
-    mv -f /etc/docker/daemon.json.cluster-lab-backup /etc/docker/daemon.json
+  if [[ -f "/etc/systemd/system/docker.service.cluster-lab-backup" ]]; then
+    mv -f /etc/systemd/system/docker.service.cluster-lab-backup /etc/systemd/system/docker.service
     systemctl daemon-reload
     systemctl restart docker.service
   fi
