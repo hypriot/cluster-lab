@@ -130,7 +130,9 @@ function health(){
 
 VERBOSE="${VERBOSE:-false}"
 
-if [ $# -eq 1 ]; then
+if [[ $DEBUG == "true" ]]; then
+  eval "$@"
+elif [ $# -eq 1 ]; then
   CL_ARGUMENT="${1}"
   case "$1" in
     "start" )
@@ -149,8 +151,6 @@ if [ $# -eq 1 ]; then
       usage
       ;;
   esac
-elif [[ $DEBUG == "true" ]]; then
-  eval "$@"
 else
   usage
 fi
