@@ -102,6 +102,7 @@ function stop(){
   reset_docker
   pre_check_docker
 
+  leave_consul_cluster
   remove_docker_container
 
   reset_networking

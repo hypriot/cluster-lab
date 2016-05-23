@@ -42,6 +42,11 @@ function consul_nodes_from_kv(){
   echo "$CONSUL_NODES_FROM_KV"
 }
 
+function leave_consul_cluster(){
+  docker exec ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul consul leave ${CLUSTER_NODE_IP}:8301 &> /dev/null
+  evaluate_result $? "  node left consul cluter"
+}
+
 function check_consul(){
   if [[ $(is_verbose) -eq 0 ]]; then
     echo -e "\nConsul"
@@ -150,7 +155,7 @@ function remove_docker_container(){
     echo -e "\n\e[34mRemove Docker container\e[0m"
   fi
 
+  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul" > /dev/null 2>&1
   docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage" > /dev/null 2>&1
   docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm" > /dev/null 2>&1
-  docker rm -vf "${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul" > /dev/null 2>&1
 }
