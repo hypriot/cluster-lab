@@ -15,7 +15,7 @@ fi
 ARCHITECTURE=$(uname -m)
 case "$ARCHITECTURE" in
     arm*|aarch64)
-        IMAGE_SWARM=hypriot/rpi-swarm:1.2.1
+        IMAGE_SWARM=hypriot/rpi-swarm:1.2.2
         IMAGE_CONSUL=hypriot/rpi-consul:0.6.4
         ;;
     amd64|x86_64)
@@ -131,7 +131,9 @@ function health(){
 
 VERBOSE="${VERBOSE:-false}"
 
-if [ $# -eq 1 ]; then
+if [[ $DEBUG == "true" ]]; then
+  eval "$@"
+elif [ $# -eq 1 ]; then
   CL_ARGUMENT="${1}"
   case "$1" in
     "start" )
@@ -150,8 +152,6 @@ if [ $# -eq 1 ]; then
       usage
       ;;
   esac
-elif [[ $DEBUG == "true" ]]; then
-  eval "$@"
 else
   usage
 fi
