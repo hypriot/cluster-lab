@@ -15,7 +15,7 @@ deployment:
   release:
     tag: /v[0-9]+(\.[0-9]+)*/
     commands:
-      - package_cloud push Hypriot/rpi/debian/wheezy $CIRCLE_ARTIFACTS/*.deb
-      - package_cloud push Hypriot/rpi/debian/jessie $CIRCLE_ARTIFACTS/*.deb
-      - package_cloud push Hypriot/rpi/raspbian/wheezy $CIRCLE_ARTIFACTS/*.deb
-      - package_cloud push Hypriot/rpi/raspbian/jessie $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/Schatzkiste/debian/wheezy $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/Schatzkiste/debian/jessie $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/Schatzkiste/raspbian/wheezy $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/Schatzkiste/raspbian/jessie $CIRCLE_ARTIFACTS/*.deb
