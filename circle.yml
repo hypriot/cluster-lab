@@ -1,0 +1,21 @@
+machine:
+  services:
+    - docker
+
+test:
+  override:
+    - VERSION=${CIRCLE_TAG} make deb
+    - cp *.deb $CIRCLE_ARTIFACTS
+
+dependencies:
+ pre:
+     - gem install package_cloud
+
+deployment:
+  release:
+    tag: /v[0-9]+(\.[0-9]+)*/
+    commands:
+      - package_cloud push Hypriot/rpi/debian/wheezy $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/rpi/debian/jessie $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/rpi/raspbian/wheezy $CIRCLE_ARTIFACTS/*.deb
+      - package_cloud push Hypriot/rpi/raspbian/jessie $CIRCLE_ARTIFACTS/*.deb
