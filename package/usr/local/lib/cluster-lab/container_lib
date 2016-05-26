@@ -123,7 +123,7 @@ function run_docker_container(){
   CLUSTER_NODE_IP="$(get_ip_of_interface "${CLUSTER_INTERFACE}")"
 
   # configure Consul start command
-  local consul_docker="docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul --net host"
+  local consul_docker="docker run --label traefik.enable=false -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_consul --net host"
   local consul_ports="-p ${CLUSTER_NODE_IP}:8400:8400 -p ${CLUSTER_NODE_IP}:8500:8500 -p ${CLUSTER_NODE_IP}:8600:8600 -p ${CLUSTER_NODE_IP}:8301:8301 -p ${CLUSTER_NODE_IP}:8302:8302 ${IMAGE_CONSUL}"
 
   if [[ "$(is_node_cluster_leader)" == "0" ]]; then
@@ -143,11 +143,11 @@ function run_docker_container(){
   sleep 3
 
   # start Swarm-Join container
-  eval "docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm ${IMAGE_SWARM} join --advertise ${CLUSTER_NODE_IP}:2375 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
+  eval "docker run --label traefik.enable=false -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarm ${IMAGE_SWARM} join --advertise ${CLUSTER_NODE_IP}:2375 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
 
 
   # start Swarm-Manage container
-  eval "docker run -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${CLUSTER_NODE_IP}:2378 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
+  eval "docker run --label traefik.enable=false -dit --restart always --name ${CLUSTER_LAB_CONTAINER_NAMESPACE}_swarmmanage -p 2378:2375 ${IMAGE_SWARM} manage --replication --advertise ${CLUSTER_NODE_IP}:2378 consul://${CLUSTER_NODE_IP}:8500"  > /dev/null 2>&1
 }
 
 function remove_docker_container(){
