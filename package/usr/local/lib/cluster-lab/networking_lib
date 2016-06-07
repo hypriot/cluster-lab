@@ -121,7 +121,7 @@ function check_internet_connection(){
   ping -W 1 -c 2 8.8.8.8 > /dev/null 2>&1
   evaluate_result $? "  Internet is reachable"
 
-  timeout 5 ping -c 1 google.com > /dev/null 2>&1
+  timeout 7 ping -c 2 google.com > /dev/null 2>&1
   evaluate_result $? "  DNS works"
 
   return "$ERRORS"
