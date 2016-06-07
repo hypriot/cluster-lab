@@ -33,7 +33,9 @@ command -v cluster-lab >/dev/null 2>&1
 if [[ "$?" -eq 0 ]]; then
   cluster-lab stop
 fi
-dpkg --force-confnew -i ./hypriot-cluster-lab-src_0.1.1-1.deb
+
+cluster_src_deb=`ls ./hypriot-cluster-lab-src_*.deb`
+dpkg --force-confnew -i ./$cluster_src_deb
 
 # start Cluster Lab
 cluster-lab start
