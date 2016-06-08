@@ -91,6 +91,8 @@ function start(){
 
   pre_check_docker_container
   run_docker_container
+  # give container more time to start
+  sleep 2
   post_check_docker_container
 
 }
