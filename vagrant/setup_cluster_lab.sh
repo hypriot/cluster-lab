@@ -12,7 +12,7 @@ apt-get install -y docker-compose
 
 # create systemd configuration
 systemctl stop docker
-cp -f /cluster-lab-src/vagrant/docker.service /lib/systemd/system/
+cp -f /cluster-lab-src/vagrant/docker.service /etc/systemd/system/
 
 # configure Docker to use overlay filesystem
 echo "DOCKER_OPTS='-s overlay'" >> /etc/default/docker
