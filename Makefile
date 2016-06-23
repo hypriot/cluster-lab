@@ -20,10 +20,10 @@ vagrant:
 docker-machine: vagrant
 	cd ./vagrant/ ; \
 	docker-machine create -d generic \
-	  --generic-ssh-user $(shell vagrant ssh-config | grep ' User ' | cut -d ' ' -f 4) \
-	  --generic-ssh-key $(shell vagrant ssh-config | grep IdentityFile | cut -d ' ' -f 4) \
-	  --generic-ip-address $(shell vagrant ssh-config | grep HostName | cut -d ' ' -f 4) \
-	  --generic-ssh-port $(shell vagrant ssh-config | grep Port | cut -d ' ' -f 4) \
+	  --generic-ssh-user $$(vagrant ssh-config leader | grep ' User ' | cut -d ' ' -f 4) \
+	  --generic-ssh-key $$(vagrant ssh-config leader | grep IdentityFile | cut -d ' ' -f 4 | cut -d '"' -f 2 ) \
+	  --generic-ip-address $$(vagrant ssh-config leader | grep HostName | cut -d ' ' -f 4) \
+	  --generic-ssh-port $$(vagrant ssh-config leader | grep Port | cut -d ' ' -f 4) \
 	  deb-builder ; \
 	cd -
 
