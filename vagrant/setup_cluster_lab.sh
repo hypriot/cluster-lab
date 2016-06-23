@@ -12,7 +12,7 @@ apt-get install -y docker-compose
 
 # create systemd configuration
 systemctl stop docker
-cp -f /cluster-lab-src/vagrant/docker.service /lib/systemd/system/
+cp -f /cluster-lab-src/vagrant/docker.service /etc/systemd/system/
 
 # configure Docker to use overlay filesystem
 echo "DOCKER_OPTS='-s overlay'" >> /etc/default/docker
@@ -33,7 +33,7 @@ command -v cluster-lab >/dev/null 2>&1
 if [[ "$?" -eq 0 ]]; then
   cluster-lab stop
 fi
-dpkg --force-confnew -i ./hypriot-cluster-lab-src_0.1.1-1.deb
+dpkg --force-confnew -i ./hypriot-cluster-lab-src_0.2.12-1.deb
 
 # start Cluster Lab
 cluster-lab start
