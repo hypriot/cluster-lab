@@ -57,7 +57,7 @@ function configure_docker(){
 
   # create backup of /etc/docker/daemon.json config
   if [[ (! -f "/etc/systemd/system/docker.service") ]]; then
-    cp /lib/systemd/system/docker.service /etc/systemd/system/docker.service.cluster-lab-backup
+    cp /lib/systemd/system/docker.service /etc/systemd/system/docker.service
   fi
 
   if [[ (! -f "/etc/systemd/system/docker.service.cluster-lab-backup") ]]; then
