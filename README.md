@@ -1,6 +1,8 @@
 # Hypriot Cluster Lab
 [![CircleCI](https://circleci.com/gh/hypriot/cluster-lab.svg?style=svg)](https://circleci.com/gh/hypriot/cluster-lab)
 
+**! Please note: This work is deprecated and will not be continued at least in the near future. Nevertheless, everyone is welcome to contribute to this work.**
+
 The Hypriot Cluster Lab allows to create a Docker Swarm Cluster very easily.
 
 The Cluster Lab can be used to
@@ -11,7 +13,6 @@ The Cluster Lab can be used to
 
 The Cluster Lab is made with love(tm), lots of glue code and technologies such as Docker-Engine, Docker-Compose, Docker-Swarm and Consul.
 
-__Note: Beware that the Cluster Lab is still beta quality.__
 
 ## Key features
 
